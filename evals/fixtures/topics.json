@@ -1,0 +1,26 @@
+[
+  {
+    "id": "learn",
+    "name": "Agent 学习",
+    "description": "理解工具循环、模型与程序的职责，关注清晰解释。",
+    "tags": [
+      {
+        "id": "tools",
+        "name": "工具循环",
+        "description": "模型请求、程序校验、执行与结果回传"
+      }
+    ]
+  },
+  {
+    "id": "engineering",
+    "name": "工程可靠性",
+    "description": "关注权限、取消、有限重试和运行预算。",
+    "tags": [
+      {
+        "id": "reliability",
+        "name": "可靠性",
+        "description": "权限、预算、重试、取消"
+      }
+    ]
+  }
+]

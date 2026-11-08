@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "archive-zero"
+version = "0.1.0.dev1"
+description = "Archive Zero: a personal reading agent with memory and a bounded harness"
+requires-python = ">=3.11"
+dependencies = ["httpx==0.28.1", "pydantic==2.12.5", "fastapi==0.162.0", "uvicorn==0.54.0"]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2", "pytest-asyncio==1.2.0", "ruff==0.14.2"]
+
+[project.scripts]
+archive-zero = "reading_agent.cli:main"
+archive-zero-server = "reading_agent.server:main"
+reading-agent = "reading_agent.cli:main"
+reading-agent-server = "reading_agent.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+reading_agent = ["fixtures.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra"
+markers = ["live: opt-in real model requests, potentially billed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]

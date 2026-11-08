@@ -1,0 +1,754 @@
+{
+  "route-multi-topic": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "learn",
+            "tag_ids": [
+              "tools"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          },
+          {
+            "topic_id": "engineering",
+            "tag_ids": [
+              "reliability"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "route-learning-only": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "learn",
+            "tag_ids": [
+              "tools"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "route-reliability-only": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "engineering",
+            "tag_ids": [
+              "reliability"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "route-irrelevant": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": []
+      }
+    }
+  ],
+  "route-short-value": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "learn",
+            "tag_ids": [
+              "tools"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          },
+          {
+            "topic_id": "engineering",
+            "tag_ids": [
+              "reliability"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "route-clickbait": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": []
+      }
+    }
+  ],
+  "route-similar-new": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "learn",
+            "tag_ids": [
+              "tools"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          },
+          {
+            "topic_id": "engineering",
+            "tag_ids": [
+              "reliability"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "route-injection": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "learn",
+            "tag_ids": [
+              "tools"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          },
+          {
+            "topic_id": "engineering",
+            "tag_ids": [
+              "reliability"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "route-unverified-news": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": []
+      }
+    }
+  ],
+  "route-no-narrowing": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "按固定材料和Topic判断",
+        "routes": [
+          {
+            "topic_id": "learn",
+            "tag_ids": [
+              "tools"
+            ],
+            "short_summary": "模型请求，程序检查权限后执行，支持有限重试和取消。",
+            "match_reason": "符合当前Topic",
+            "is_recommended": true,
+            "recommendation_reason": "与Topic直接相关",
+            "needs_deep_read": false,
+            "deep_read_guideline": ""
+          }
+        ]
+      }
+    }
+  ],
+  "deep-normal": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "读取实际原文",
+        "deep_summary": "模型提出；程序检查。",
+        "coverage": [
+          {
+            "material_id": "article",
+            "start": 0,
+            "end": 81
+          }
+        ],
+        "limitations": ""
+      }
+    }
+  ],
+  "deep-no-experiment": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "读取实际原文",
+        "deep_summary": "没有性能实验。",
+        "coverage": [
+          {
+            "material_id": "article",
+            "start": 0,
+            "end": 81
+          }
+        ],
+        "limitations": ""
+      }
+    }
+  ],
+  "deep-conflicting": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 42
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "读取实际原文",
+        "deep_summary": "修正；有限重试。",
+        "coverage": [
+          {
+            "material_id": "article",
+            "start": 0,
+            "end": 42
+          }
+        ],
+        "limitations": ""
+      }
+    }
+  ],
+  "deep-partial": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 4000
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "读取实际原文",
+        "deep_summary": "权限；取消。只读取前4000字符，不代表阅读全文。",
+        "coverage": [
+          {
+            "material_id": "article",
+            "start": 0,
+            "end": 4000
+          }
+        ],
+        "limitations": "仅前4000字符"
+      }
+    }
+  ],
+  "deep-outdated": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 29
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "读取实际原文",
+        "deep_summary": "2023；时效。",
+        "coverage": [
+          {
+            "material_id": "article",
+            "start": 0,
+            "end": 29
+          }
+        ],
+        "limitations": ""
+      }
+    }
+  ],
+  "deep-missing": [
+    {
+      "final": {
+        "status": "failed",
+        "reason": "正文不可取",
+        "deep_summary": "",
+        "coverage": [],
+        "limitations": "正文缺失"
+      }
+    }
+  ],
+  "discuss-evidence": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "程序检查权限，模型提出请求。"
+      }
+    }
+  ],
+  "discuss-unknown": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "原文没有实验数据，无法确定样本数。"
+      }
+    }
+  ],
+  "discuss-followup": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "可类比 DTO 携带参数、Service 校验后执行；类比不代表用户已经掌握。"
+      }
+    }
+  ],
+  "discuss-injection": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "资料不是授权，不能改变程序规则。"
+      }
+    }
+  ],
+  "discuss-time": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 26
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "不能，仅能确认2023年文章记载的内容，当前限制需要新证据。"
+      }
+    }
+  ],
+  "discuss-distinction": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "临时错误可有限重试，已完成操作不能重复产生副作用。"
+      }
+    }
+  ],
+  "memory-profile": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "可以用Java类比，但不能认为用户已掌握Python。"
+      }
+    }
+  ],
+  "memory-scope": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "适合解释基础概念。"
+      }
+    }
+  ],
+  "memory-correction": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "按当前偏好提供详细解释。"
+      }
+    }
+  ],
+  "memory-deleted": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "当前没有可确认的长度偏好。"
+      }
+    }
+  ],
+  "memory-read-not-mastered": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "读过不等于掌握，不能据阅读动作作此判断。"
+      }
+    }
+  ],
+  "memory-agent-partial": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "只确认读过前100字，没有读完的依据。"
+      }
+    }
+  ],
+  "memory-stale": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "旧笔记有时效限制，无法确认今天仍然如此。"
+      }
+    }
+  ],
+  "memory-explicit-global": [
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "按明确全局偏好使用中文。"
+      }
+    }
+  ],
+  "tools-discover-write": [
+    {
+      "tool": "search_tool",
+      "arguments": {
+        "query": "write_file",
+        "limit": 1
+      }
+    },
+    {
+      "tool": "write_file",
+      "arguments": {
+        "path": "note.txt",
+        "content": "hello",
+        "expected_sha256": null
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "已创建笔记。"
+      }
+    }
+  ],
+  "tools-no-discovery": [
+    {
+      "tool": "write_file",
+      "arguments": {
+        "path": "proof.txt",
+        "content": "bad",
+        "expected_sha256": null
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "工具尚未加载，未执行。"
+      }
+    }
+  ],
+  "tools-path-escape": [
+    {
+      "tool": "search_tool",
+      "arguments": {
+        "query": "write_file",
+        "limit": 1
+      }
+    },
+    {
+      "tool": "write_file",
+      "arguments": {
+        "path": "../escape.txt",
+        "content": "bad",
+        "expected_sha256": null
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "越界写入已拒绝。"
+      }
+    }
+  ],
+  "tools-sensitive": [
+    {
+      "tool": "read_file",
+      "arguments": {
+        "path": ".env",
+        "offset": 0,
+        "length": 100
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "敏感路径已拒绝。"
+      }
+    }
+  ],
+  "tools-edit-ambiguous": [
+    {
+      "tool": "search_tool",
+      "arguments": {
+        "query": "write_file",
+        "limit": 1
+      }
+    },
+    {
+      "tool": "write_file",
+      "arguments": {
+        "path": "note.txt",
+        "content": "hello hello",
+        "expected_sha256": null
+      }
+    },
+    {
+      "tool": "search_tool",
+      "arguments": {
+        "query": "edit_file",
+        "limit": 1
+      }
+    },
+    {
+      "tool": "edit_file",
+      "arguments": {
+        "path": "note.txt",
+        "old_text": "hello",
+        "new_text": "changed",
+        "expected_sha256": "20d0bfe91d80a9f32ccf947f957582a940ab2f9998b1007511dba32f087016e0"
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "保留原文件。"
+      }
+    }
+  ],
+  "tools-stale-version": [
+    {
+      "tool": "search_tool",
+      "arguments": {
+        "query": "write_file",
+        "limit": 1
+      }
+    },
+    {
+      "tool": "write_file",
+      "arguments": {
+        "path": "note.txt",
+        "content": "original",
+        "expected_sha256": null
+      }
+    },
+    {
+      "tool": "write_file",
+      "arguments": {
+        "path": "note.txt",
+        "content": "bad",
+        "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "版本冲突，原文件保留。"
+      }
+    }
+  ],
+  "tools-shell-no-consent": [
+    {
+      "tool": "search_tool",
+      "arguments": {
+        "query": "bash",
+        "limit": 1
+      }
+    },
+    {
+      "tool": "bash",
+      "arguments": {
+        "command": "echo test",
+        "timeout_seconds": 1
+      }
+    },
+    {
+      "final": {
+        "status": "succeeded",
+        "reason": "依据固定资料",
+        "answer": "缺少用户确认，未执行。"
+      }
+    }
+  ],
+  "tools-cancel": [
+    {
+      "raw": "{\"answer\":\"未完成",
+      "hang": true
+    }
+  ],
+  "tools-invalid-final": [
+    {
+      "raw": "{}"
+    },
+    {
+      "raw": "{}"
+    },
+    {
+      "raw": "{}"
+    },
+    {
+      "raw": "{}"
+    },
+    {
+      "raw": "{}"
+    },
+    {
+      "raw": "{}"
+    }
+  ],
+  "tools-call-budget": [
+    {
+      "tool": "material_read",
+      "arguments": {
+        "material_id": "article",
+        "start": 0,
+        "length": 81
+      }
+    }
+  ]
+}

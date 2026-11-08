@@ -1,0 +1,33 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+artifacts/
+.local/
+desktop/node_modules/
+desktop/dist/
+*.db
+*.db-wal
+*.db-shm
+
+# Eval reports contain generated answers and fixture snapshots.
+evals/reports/
+
+# Release/build outputs and temporary credentials never belong to source.
+release/
+build/
+*.spec
+
+# Local environments may be relocated during maintenance.
+*.log
+
+# Personal work material must remain outside source publication.
+/personal/
+/private-notes/
+/docs/interview.md
+/docs/resume.md
