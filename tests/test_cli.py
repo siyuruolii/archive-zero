@@ -9,7 +9,7 @@ from reading_agent.infrastructure.configuration import data_dir
 async def test_preview_does_not_need_credentials(monkeypatch, capsys):
     monkeypatch.delenv("AGENT_API_KEY", raising=False)
     monkeypatch.delenv("AGENT_DATA_DIR", raising=False)
-    assert data_dir() == Path(__file__).resolve().parents[1] / ".local"
+    assert data_dir() == Path(__file__).resolve().parents[1] / ".dev-data"
     assert sample_corpus().materials["tools"].body
     code = await execute(parser().parse_args(["route", "--preview"]))
     assert code == 0

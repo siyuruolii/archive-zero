@@ -2,6 +2,7 @@
 
 2026-11-09。已接入晴空阅览室的首页、材料侧栏、品牌标识、页面 favicon、Electron 窗口与托盘。
 
+- `sky-archivist-launcher.png`：同一立绘的透明 PNG 导出，供 WPF 启动窗口读取。
 - `sky-archivist.webp`：透明背景管理员立绘，首页全身与材料侧栏半身共用。
 - `archive-zero-mascot.png`：生成的透明背景原始图。
 - `archive-zero-icon.png`：512 × 512 PNG，适用于界面和高分辨率图标。

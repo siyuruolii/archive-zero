@@ -8,7 +8,8 @@ $env:PYTHONNOUSERSITE = '1'
 $env:GIT_TERMINAL_PROMPT = '0'
 $env:GCM_INTERACTIVE = 'never'
 $projectDirectory = Split-Path -Parent $PSScriptRoot
-$runtimeDirectory = Join-Path $projectDirectory '.runtime'
+$developmentMode = Test-Path -LiteralPath (Join-Path $projectDirectory '.development.json')
+$runtimeDirectory = if ($developmentMode) { Join-Path $projectDirectory '.dev-data/launcher' } else { Join-Path $projectDirectory '.runtime' }
 
 function Run-Step([string]$Program, [string[]]$Arguments) {
     & $Program @Arguments
@@ -55,6 +56,31 @@ try {
     catch { throw 'Another startup or update is already running.' }
     Push-Location -LiteralPath $projectDirectory
     try {
+        if ($developmentMode) {
+            if ($Update) { throw 'Use Git directly in the development checkout; update the daily-use copy from the app.' }
+            $env:AGENT_RUN_MODE = 'development'
+            if (-not $env:AGENT_DATA_DIR) { $env:AGENT_DATA_DIR = Join-Path $projectDirectory '.dev-data' }
+            $env:AGENT_PROFILE_DIR = Join-Path $env:AGENT_DATA_DIR 'desktop-profile'
+            $env:AGENT_PYTHON = Join-Path $projectDirectory '.venv/Scripts/python.exe'
+            if (-not (Test-Path -LiteralPath $env:AGENT_PYTHON)) { throw 'Set up the development .venv first; no additional environment will be downloaded.' }
+            Run-Step $env:AGENT_PYTHON @('-c','import fastapi, pydantic, uvicorn, reading_agent')
+            $devNode = (Get-Command node.exe -ErrorAction Stop).Source
+            $devNpm = Join-Path (Split-Path -Parent (Get-Command npm.cmd -ErrorAction Stop).Source) 'node_modules/npm/bin/npm-cli.js'
+            Write-Output 'Building development reading room...'
+            Run-Step $devNode @($devNpm,'--prefix',(Join-Path $projectDirectory 'desktop'),'run','prepare:electron')
+            Run-Step $devNode @($devNpm,'--prefix',(Join-Path $projectDirectory 'desktop'),'run','build')
+            if (-not $PrepareOnly) { Start-Process -FilePath (Join-Path $projectDirectory 'desktop/node_modules/electron/dist/electron.exe') -ArgumentList ('"{0}"' -f (Join-Path $projectDirectory 'desktop')) -WorkingDirectory $projectDirectory -WindowStyle Hidden | Out-Null }
+            Write-Output 'Preparation complete.'
+            exit 0
+        }
+        $env:AGENT_RUN_MODE = 'daily'
+        if (-not $env:AGENT_DATA_DIR) {
+            $dailyData = Join-Path $projectDirectory 'data'
+            $legacyData = Join-Path $projectDirectory '.local'
+            if ((Test-Path -LiteralPath (Join-Path $legacyData 'reading.db')) -and -not (Test-Path -LiteralPath (Join-Path $dailyData 'reading.db'))) { $dailyData = $legacyData }
+            $env:AGENT_DATA_DIR = $dailyData
+        }
+        $env:AGENT_PROFILE_DIR = Join-Path $env:AGENT_DATA_DIR 'desktop-profile'
         $specs = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'launcher-runtimes.json') -Raw | ConvertFrom-Json
         if ($Update) {
             Write-Output 'Checking repository and downloading update...'

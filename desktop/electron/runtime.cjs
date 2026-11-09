@@ -11,7 +11,7 @@ function backendRuntime(app, resources, env, root) {
   };
   return {
     executable: env.AGENT_PYTHON || path.join(root, '.venv', 'Scripts', 'python.exe'),
-    args: ['-X', 'utf8', '-m', 'reading_agent.server'], cwd: root, env: { ...env }
+    args: ['-X', 'utf8', '-m', 'reading_agent.server'], cwd: root, env: { ...env, AGENT_DATA_DIR: env.AGENT_DATA_DIR || path.join(root, ".dev-data") }
   };
 }
 module.exports = { backendRuntime };

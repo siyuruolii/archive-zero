@@ -9,7 +9,9 @@ let backend, window, tray, origin, quitting = false;
 const subscriptions = new Map();
 const token = randomBytes(32).toString('hex');
 // 保持已有桌面配置目录和单实例身份，品牌更名不迁移用户数据。
-app.setPath('userData', path.join(app.getPath('appData'), 'reading-agent-desktop'));
+const profile = process.env.AGENT_PROFILE_DIR || (process.env.AGENT_RUN_MODE === 'development' ? path.join(__dirname, '../../.dev-data/desktop-profile') : path.join(app.getPath('appData'), 'reading-agent-desktop'));
+require('node:fs').mkdirSync(profile, { recursive: true });
+app.setPath('userData', profile);
 app.setName('Archive Zero');
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
@@ -69,6 +71,7 @@ else {
       let updateBusy = false;
       ipcMain.handle('source-update', async (event, action) => {
         if (event.sender !== window.webContents || !['check', 'apply'].includes(action)) throw new Error('请求不被允许');
+        if (process.env.AGENT_RUN_MODE === 'development') throw new Error('开发目录请手动管理 Git；日常使用目录可在应用内更新。');
         if (app.isPackaged) throw new Error('此更新器用于完整克隆的源码工作区。');
         if (updateBusy) throw new Error('已有更新检查正在进行。');
         updateBusy = true;

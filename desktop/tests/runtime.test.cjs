@@ -17,5 +17,6 @@ test('development backend retains Python module and project directory', () => {
   const result = backendRuntime({ isPackaged: false }, 'resources', {}, 'checkout');
   assert.deepEqual(result.args, ['-X', 'utf8', '-m', 'reading_agent.server']);
   assert.equal(result.cwd, 'checkout');
-  assert.equal(result.env.AGENT_DATA_DIR, undefined);
+  assert.equal(result.env.AGENT_DATA_DIR, path.join('checkout', '.dev-data'));
+  assert.equal(backendRuntime({ isPackaged: false }, 'r', { AGENT_DATA_DIR: 'daily/data' }, 'c').env.AGENT_DATA_DIR, 'daily/data');
 });

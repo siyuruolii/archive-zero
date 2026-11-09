@@ -1,0 +1,34 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="860" Height="510" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" Title="Archive Zero · 晴空阅览室" FontFamily="Microsoft YaHei UI" Foreground="#28465C">
+ <Window.Resources>
+  <Style TargetType="Button"><Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="#52758F"/><Setter Property="Padding" Value="12,7"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="surface" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="surface" Property="Background" Value="#DFEDF6"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.35"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+ </Window.Resources>
+ <Border Margin="15" CornerRadius="18" Background="#F8FCFE" BorderBrush="#D8E8F0" BorderThickness="1">
+  <Border.Effect><DropShadowEffect BlurRadius="22" ShadowDepth="4" Opacity="0.13" Color="#345A75"/></Border.Effect>
+  <Grid ClipToBounds="True">
+   <Grid.RowDefinitions><RowDefinition Height="60"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Border x:Name="DragHeader" Background="#FAFDFE" CornerRadius="18,18,0,0"><Grid Margin="21,0,13,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Image x:Name="BrandImage" Width="32" Height="32" Margin="0,0,10,0"/><StackPanel VerticalAlignment="Center"><TextBlock Text="Archive Zero" FontSize="13" FontWeight="SemiBold"/><TextBlock Text="零号档案" Foreground="#7891A3" FontSize="10" Margin="0,2,0,0"/></StackPanel></StackPanel><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button x:Name="MinimizeButton" Content="−" FontSize="19" ToolTip="最小化"/><Button x:Name="CloseButton" Content="×" FontSize="19" ToolTip="关闭" IsEnabled="False"/></StackPanel></Grid></Border>
+   <Grid Grid.Row="1">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
+    <Grid Margin="34,19,5,22">
+     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+     <TextBlock x:Name="ModeLabel" Text="晴空阅览室" Foreground="#6589A3" FontSize="12" Margin="0,0,0,15"/>
+     <TextBlock x:Name="Headline" Grid.Row="1" Text="为下一次好奇，&#10;打开一页晴空。" FontFamily="SimSun" FontSize="28" LineHeight="43" Margin="0,0,0,14"/>
+     <TextBlock Grid.Row="2" Text="正在整理好你的阅读空间。&#10;准备就绪后，阅览室会自动打开。" FontSize="12" Foreground="#6B8599" LineHeight="23"/>
+     <StackPanel Grid.Row="3" VerticalAlignment="Center" Margin="0,18,17,18">
+      <TextBlock x:Name="PhaseLabel" Text="正在检查本地环境…" FontSize="13" Margin="0,0,0,12"/>
+      <ProgressBar x:Name="Progress" Height="4" IsIndeterminate="True" Background="#DFECF4" Foreground="#6FA6CD" BorderThickness="0"/>
+      <StackPanel Orientation="Horizontal" Margin="0,12,0,0"><TextBlock x:Name="StepOne" Text="检查环境" Foreground="#3975AB" FontSize="11"/><TextBlock Text="   /   " Foreground="#A8BDCC"/><TextBlock x:Name="StepTwo" Text="准备依赖" Foreground="#8EA4B3" FontSize="11"/><TextBlock Text="   /   " Foreground="#A8BDCC"/><TextBlock x:Name="StepThree" Text="打开阅览室" Foreground="#8EA4B3" FontSize="11"/></StackPanel>
+     </StackPanel>
+     <Button x:Name="DetailsButton" Grid.Row="4" Content="查看详细日志  ⌄" HorizontalAlignment="Left" Padding="0,5" FontSize="11"/>
+    </Grid>
+    <Grid Grid.Column="1" Margin="0,5,0,0" ClipToBounds="True">
+     <Border Margin="12,23,-32,30" Background="#E2F1F8" CornerRadius="140,0,0,140"/>
+     <Border Margin="48,48,-19,50" Background="#C8E6F2" BorderBrush="#F6FBFD" BorderThickness="6" CornerRadius="7"><Grid><Rectangle Fill="#F6FBFD" Width="5" HorizontalAlignment="Center"/><Rectangle Fill="#F6FBFD" Height="5" VerticalAlignment="Center"/></Grid></Border>
+     <Image x:Name="CharacterImage" Width="245" Margin="0,-7,10,4" VerticalAlignment="Bottom" Stretch="Uniform"/>
+     <TextBlock Text="把问题，留给下一页。" Foreground="#668BA1" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,19,13"/>
+    </Grid>
+   </Grid>
+   <Border x:Name="DetailsPanel" Grid.Row="2" Visibility="Collapsed" BorderBrush="#DDE9F1" BorderThickness="0,1,0,0" Background="#F0F6FA" Padding="22,12"><TextBox x:Name="LogOutput" Height="120" IsReadOnly="True" FontFamily="Consolas, Microsoft YaHei UI" FontSize="11" Foreground="#5D778A" Background="Transparent" BorderThickness="0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/></Border>
+  </Grid>
+ </Border>
+</Window>

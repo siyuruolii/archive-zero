@@ -34,3 +34,9 @@ build/
 
 # Project-local launcher runtimes, download cache and startup logs.
 .runtime/
+
+# Daily-use data and backups stay local; developer data is separate.
+/data/
+/backups/
+/.dev-data/
+/.development.json

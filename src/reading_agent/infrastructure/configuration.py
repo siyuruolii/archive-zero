@@ -12,7 +12,7 @@ def data_dir():
     default = (
         Path(os.environ.get("LOCALAPPDATA", Path.home())) / "ArchiveZero" / "data"
         if getattr(sys, "frozen", False)
-        else Path(__file__).resolve().parents[3] / ".local"
+        else Path(__file__).resolve().parents[3] / ".dev-data"
     )
     return Path(os.environ.get("AGENT_DATA_DIR", str(default))).resolve()
 

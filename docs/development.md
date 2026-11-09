@@ -16,13 +16,17 @@
 
 ## 仓库启动器与更新器
 
-根目录的 `Archive Zero.exe` 是小型 WinForms 启动器，源代码为 `scripts/launcher/Launcher.cs`。在 Windows 使用 `powershell -File scripts/build-launcher.ps1` 重建，需提交源代码、图标及生成的 EXE；完整运行环境不提交。启动器使用进程内 PowerShell 执行策略运行项目脚本，不修改机器执行策略。
+根目录的 `Archive Zero.exe` 是轻量 WPF 启动器，源代码为 `scripts/launcher/Launcher.cs` 和嵌入的 `Launcher.xaml`。在 Windows 使用 `powershell -File scripts/build-launcher.ps1` 重建，需提交源代码、图标及生成的 EXE；完整运行环境不提交。启动器使用进程内 PowerShell 执行策略运行项目脚本，不修改机器执行策略。
 
-`scripts/bootstrap-desktop.ps1` 从固定 HTTPS 地址下载运行环境并核对 `scripts/launcher-runtimes.json` 的 SHA-256。Python 使用官方 [NuGet 运行环境](https://docs.python.org/3.13/using/windows.html#the-nuget-org-packages)，Node 使用 [官方版本文件](https://nodejs.org/dist/v24.22.2/SHASUMS256.txt)。运行环境、虚拟环境、下载缓存、指纹与日志都在 `.runtime/`；锁文件防止重复准备。完成相应阶段后才写入成功指纹，失败后可重试。
+`scripts/bootstrap-desktop.ps1` 从固定 HTTPS 地址下载运行环境并核对 `scripts/launcher-runtimes.json` 的 SHA-256。Python 使用官方 [NuGet 运行环境](https://docs.python.org/3.13/using/windows.html#the-nuget-org-packages)，Node 使用 [官方版本文件](https://nodejs.org/dist/v24.22.2/SHASUMS256.txt)。日常模式的运行环境、虚拟环境、下载缓存、指纹与日志都在 `.runtime/`；锁文件防止重复准备。完成相应阶段后才写入成功指纹，失败后可重试。
 
 更新入口由 `SourceUpdate.tsx`、受限 IPC 和 `electron/source-update.cjs` 实现。检查在独立 Node 进程中执行，不阻塞 Electron 主进程；只接受本项目 origin 与 main 分支，拒绝脏工作区与非快进更新。退出旧进程后复查，并从 `.runtime/` 的启动器副本执行更新，避免 Windows 锁住被跟踪的 EXE。不会执行 reset、clean、stash 或强制 checkout，不使用自动交互登录。
 
 验收在独立完整源码副本中运行 `Archive Zero.exe --prepare-only`，再运行 `powershell -File scripts/test-launcher.ps1 -PreparedRoot <副本绝对路径>`，验证缓存复用与 Windows EXE 解锁交接；然后运行 `node desktop/tests/launcher-smoke.cjs <副本绝对路径>`；移除系统 Python/Node PATH，验证项目本地环境和界面。`npm test` 中的 source-update 用真实临时 Git 仓库验证快进、脏工作区、错误分支、错误远程及分叉保护。不能用替身或本机验收替代独立干净 Windows 机器验收。
+
+日常 EXE 默认 `data/`，开发脚本和源码 CLI 默认 `.dev-data/`。开发副本的 `.development.json` 标记让 EXE 复用 `.venv` 与已安装 Node，日志放 `.dev-data/launcher/`，不新增托管 Python。数据与浏览器 profile 隔离：日常 bootstrap 设置 `AGENT_PROFILE_DIR=data/desktop-profile`，开发入口设置为开发数据目录下的 profile，显式 `AGENT_DATA_DIR` 仍优先。迁移旧资料属于实际数据操作，必须停止旧后端、持有 backend.lock、备份 SQLite 与 MD/JSONL、核对文件摘要；禁止用正式资料进行测试。
+
+运行 `node desktop/tests/instance-isolation-smoke.cjs` 验证两份进程并行、profile 不同与主题数据不互相出现。预览启动器可使用 `Archive Zero.exe --preview <绝对 PNG 路径>`，不启动后端或读取用户资料。
 
 ## 验证命令
 
@@ -62,7 +66,8 @@ Pop-Location
 
 | 路径 | 处理方式 |
 | --- | --- |
-| .local/ 或自定义数据目录 | 正式数据/凭据/会话/记忆，禁止作为缓存清理 |
+| data/、旧 .local/ 或自定义日常数据目录 | 正式数据/凭据/会话/记忆，禁止作为缓存清理 |
+| .dev-data/ | 仅开发资料与独立桌面 profile，不与日常数据混用 |
 | .runtime/ | 启动器下载的运行环境、依赖指纹与日志；不提交，不等同用户资料 |
 | .venv/、desktop/node_modules/ | 已安装依赖，保留便于直接工作；分享仓库时不包含 |
 | src/*.egg-info/ | 构建生成元数据，可清理；当前安装使用 .venv 中 dist-info，重新构建可再生 |
