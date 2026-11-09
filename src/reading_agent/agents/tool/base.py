@@ -4,7 +4,7 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from ..models import StrictModel
+from reading_agent.domain.models import StrictModel
 
 
 @dataclass(frozen=True)

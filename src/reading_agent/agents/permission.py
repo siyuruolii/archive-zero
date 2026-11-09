@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from .models import StrictModel
+from reading_agent.domain.models import StrictModel
 
 
 class PermissionPolicy(StrictModel):

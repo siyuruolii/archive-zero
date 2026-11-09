@@ -12,17 +12,10 @@ from email.utils import parsedate_to_datetime
 from pydantic import Field
 
 from reading_agent.agents.harness import Harness
-from reading_agent.agents.models import (
-    HistoricalMaterial,
-    Material,
-    RouteFinal,
-    StrictModel,
-    Tag,
-    Task,
-    Topic,
-)
+from reading_agent.agents.models import RouteFinal, Task
 from reading_agent.agents.permission import PermissionPolicy
 from reading_agent.agents.tool import Corpus
+from reading_agent.domain.models import HistoricalMaterial, Material, StrictModel, Tag, Topic
 from reading_agent.infrastructure.fetching import normalized_url
 from reading_agent.infrastructure.locking import FileLock
 from reading_agent.infrastructure.workspace import Workspace

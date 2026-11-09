@@ -52,6 +52,7 @@ def check_docs(root):
 def check_imports(root):
     package = root / "src/reading_agent"
     forbidden = {
+        "domain": {"agents", "services", "interfaces", "infrastructure", "storage"},
         "agents": {"services", "interfaces"},
         "services": {"interfaces"},
         "storage": {"agents", "services", "interfaces", "infrastructure"},

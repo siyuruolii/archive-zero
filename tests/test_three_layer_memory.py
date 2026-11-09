@@ -84,7 +84,7 @@ async def test_atomic_write_failure_preserves_original_and_cleans_temporary_file
     def fail(*args):
         raise OSError("simulated replace failure")
 
-    monkeypatch.setattr("reading_agent.services.memory.os.replace", fail)
+    monkeypatch.setattr("reading_agent.services.memory.documents.os.replace", fail)
     with pytest.raises(OSError):
         memory.correct(mid, "不能提交的更正")
     assert document_path(memory, mid).read_bytes() == original

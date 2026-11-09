@@ -2,7 +2,8 @@
 
 from pydantic import Field
 
-from ..models import Identity, StrictModel
+from reading_agent.domain.models import Identity, StrictModel
+
 from .base import ToolSpec, error
 
 

@@ -5,8 +5,9 @@ import pytest
 from conftest import ScriptedProvider, route_item, route_json
 
 from reading_agent.agents.harness import Budget, Harness
-from reading_agent.agents.models import Material, Task
+from reading_agent.agents.models import Task
 from reading_agent.agents.provider import ProviderError, ProviderEvent, ToolCall, Turn
+from reading_agent.domain.models import Material
 
 
 def task(role="route", material="tools"):

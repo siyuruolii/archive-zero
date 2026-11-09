@@ -8,8 +8,9 @@ from typing import Any
 
 from pydantic import Field
 
+from reading_agent.domain.models import StrictModel, Text
+
 from .inference import infer
-from .models import StrictModel, Text
 from .provider import ModelRequest, Turn
 
 INSTRUCTION = (

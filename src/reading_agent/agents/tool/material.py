@@ -5,7 +5,9 @@ import hashlib
 import httpx
 from pydantic import Field
 
-from ..models import Coverage, Identity, StrictModel
+from reading_agent.domain.models import Identity, StrictModel
+
+from ..models import Coverage
 from .base import ToolSpec, error
 
 

@@ -77,3 +77,15 @@ def test_configuration_wiring_exception_is_limited_to_existing_contracts(tmp_pat
     assert len(errors) == 2
     assert any("materials" in error for error in errors)
     assert any("fetching.py" in error for error in errors)
+
+
+def test_domain_cannot_depend_on_runtime_or_storage(tmp_path):
+    domain = tmp_path / "src/reading_agent/domain"
+    domain.mkdir(parents=True)
+    (domain / "bad.py").write_text(
+        "from reading_agent.agents.models import Task\nfrom ..storage.database import Store\n",
+        encoding="utf-8",
+    )
+    errors = check_imports(tmp_path)
+    assert len(errors) == 2
+    assert all("domain cannot import" in error for error in errors)

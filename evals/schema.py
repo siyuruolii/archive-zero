@@ -6,7 +6,8 @@ from typing import Literal
 from pydantic import Field, field_validator, model_validator
 
 from reading_agent.agents.harness import Budget
-from reading_agent.agents.models import StrictModel, Task
+from reading_agent.agents.models import Task
+from reading_agent.domain.models import StrictModel
 
 
 class Expected(StrictModel):

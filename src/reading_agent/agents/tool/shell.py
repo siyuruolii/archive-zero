@@ -12,10 +12,10 @@ from uuid import uuid4
 
 from pydantic import Field
 
+from reading_agent.domain.models import StrictModel
 from reading_agent.infrastructure.processes import run_process
 from reading_agent.storage.database import Conflict
 
-from ..models import StrictModel
 from ..permission import PermissionPolicy, check_permission
 from .base import ToolSpec, error
 from .filesystem import available

@@ -1,10 +1,10 @@
 # Archive Zero 开发与维护
 
-入口：[README](../README.md) · [Agent 地图](../AGENTS.md) · [当前架构](architecture.md)。最后核对：2026-11-08。
+入口：[README](../README.md) · [Agent 地图](../AGENTS.md) · [当前架构](architecture.md)。最后核对：2026-11-09。
 
 ## 工作方式
 
-先定位实际调用链和相关测试，再修改；业务通过 Harness，工具能力放进 `agents/tool/` 的业务分组。输出契约在 models.py，Schema/业务校验不能因模型偶发失败而关闭。重要新约束应进入可执行检查，局部表达不作无意义限制。
+先定位实际调用链和相关测试，再修改；业务通过 Harness，工具能力放进 `agents/tool/` 的业务分组。业务实体与基础类型在 domain/models.py，Agent 输入/输出契约在 agents/models.py，记忆契约在 services/memory/models.py，Schema/业务校验不能因模型偶发失败而关闭。重要新约束应进入可执行检查，局部表达不作无意义限制。
 
 小修改直接实现；复杂变更在相关文档中记录目标、验收、决策与未完成项，完成后更新当前设计即可，不再逐阶段累积同类说明。发生失败追加 [失败账本](failure-log.md)，保留已确认原因与假设的区别。避免同时维护多个“当前架构”。
 
@@ -44,7 +44,7 @@ Pop-Location
 
 ## 仓库检查覆盖什么
 
-`scripts/check_repo.py` 检查当前文档的本地链接目标、从 README/AGENTS 可达性、AGENTS 不超过 100 行，以及 Python AST 的绝对/相对导入边界：agents 不导入 services/interfaces，services 不导入 interfaces 或绕过 Harness 直接调用 Loop/上下文/推断/压缩实现，storage 不反向依赖上层，infrastructure 不依赖 agents/services/interfaces。
+`scripts/check_repo.py` 检查当前文档的本地链接目标、从 README/AGENTS 可达性、AGENTS 不超过 100 行，以及 Python AST 的绝对/相对导入边界：domain 不依赖运行时、存储或其他上层模块，agents 不导入 services/interfaces，services 不导入 interfaces 或绕过 Harness 直接调用 Loop/上下文/推断/压缩实现，storage 不反向依赖上层，infrastructure 不依赖 agents/services/interfaces。
 
 现有 configuration.py 是配置接线适配器，允许导入 provider、model_router 和 memory_consolidation 的配置契约；例外仅限该文件及三个模块，不放开其他上层依赖。它不是完整静态类型或安全分析，不验证远程链接、章节锚点、动态导入与文档语义新鲜度。新增测试用坏链接、孤立文档、逆向导入和例外越界验证检查器确实会报错。当前未接入远程 CI，发布前需本机执行；未来可将同一命令接入 CI。
 

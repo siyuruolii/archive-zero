@@ -19,12 +19,13 @@ from reading_agent.agents.compact import (
 from reading_agent.agents.context import PreparedContext
 from reading_agent.agents.messages import sanitize_messages
 from reading_agent.agents.model_router import stage_provider
-from reading_agent.agents.models import FINAL_MODELS, StrictModel, Task
+from reading_agent.agents.models import FINAL_MODELS, Task
 from reading_agent.agents.provider import ModelRequest, ProviderError, ProviderEvent, Turn
 from reading_agent.agents.recovery import checkpoint, fingerprint, restore
 from reading_agent.agents.streaming import AnswerDecoder, event_stream
 from reading_agent.agents.telemetry import context_metrics, run_metrics
 from reading_agent.agents.tool import ToolSession, compact_json
+from reading_agent.domain.models import StrictModel
 
 
 class Provider(Protocol):

@@ -3,8 +3,8 @@
 import json
 from importlib.resources import files
 
-from reading_agent.agents.models import HistoricalMaterial, Material, Topic
 from reading_agent.agents.tool import Corpus
+from reading_agent.domain.models import HistoricalMaterial, Material, Topic
 
 
 def sample_corpus() -> Corpus:

@@ -1,6 +1,6 @@
 # Archive Zero 当前架构
 
-核对日期：2026-11-08。本文描述当前代码；设计历史与失败见 [失败账本](failure-log.md)，验证命令见 [开发指南](development.md)。
+核对日期：2026-11-09。本文描述当前代码；设计历史与失败见 [失败账本](failure-log.md)，验证命令见 [开发指南](development.md)。
 
 ## 调用链与职责
 
@@ -30,11 +30,13 @@ flowchart TD
 
 | 路径（src/reading_agent/ 下） | 主要职责 |
 | --- | --- |
-| interfaces/api.py、server.py | API、生命周期、后台来源轮询与鉴权接线 |
+| interfaces/api.py、server.py | 应用组合入口、生命周期、后台轮询与鉴权接线 |
+| interfaces/routes/ | materials / sessions / memory 业务路由；common 放 HTTP 输入和 SSE 适配 |
+| domain/models.py | Topic、Tag、Material、HistoricalMaterial 与基础校验类型，不依赖运行时层 |
 | services/materials.py | RSS 来源、导入边界、材料与 Topic 视角、路由/精读提交 |
 | services/discussion.py、run_stream.py | 讨论调度、停止、草稿/事件快照、手动恢复 |
 | services/sessions.py、session_events.py | 会话树、分支、JSONL 事件、SQL 元数据恢复 |
-| services/memory.py、memory_consolidation.py | MD 记忆、索引、用户候选校验、后台隔离整理 |
+| services/memory/、memory_consolidation.py | service 负责记忆业务编排，documents 负责 MD/目录迁移/索引，recall 负责会话检索与证据回忆，models 放记忆契约；consolidation 负责后台隔离整理 |
 | agents/harness.py | 准备上下文 → Loop → 业务提交 → 记忆提取与调度收尾 |
 | agents/loop.py、messages.py、recovery.py | 预算/取消/工具往返、消息修复、检查点及保守恢复 |
 | agents/context.py、prompts.py、compact.py | 资料装配、结构化系统提示、压缩策略 |
@@ -43,6 +45,10 @@ flowchart TD
 | agents/streaming.py、telemetry.py | Provider 事件归一化、增量正文、用量/预算指标 |
 | storage/database.py | SQLite schema、短事务、外键、唯一约束与基础存储异常 |
 | infrastructure/ | 网络获取、锁、配置加密、文件工作区和进程管理 |
+
+业务实体属于 `domain/models.py`；Agent 的 Task、历史消息、最终输出与角色契约仍在 `agents/models.py`。`services/memory/__init__.py` 仅提供公共入口，内部使用 documents / recall 两个职责部件共同实现 Memory 服务，它们依赖服务持有的 store、directory、provider，不作为独立服务实例化。业务继续只通过 Harness 调用模型。
+
+本次按职责拆分，不设机械行数上限：Loop 的预算、取消和工具往返构成一个执行状态机；工具已按能力分组；prompt/context/harness 各有独立职责，暂不新增仅用于包裹单文件的目录。MaterialService 的来源导入与路由/精读仍共享取消和存储状态，后续若继续拆分应先定义显式协作接口，避免增加隐式跨文件状态。
 
 前端在 `desktop/renderer/`，主进程和桥在 `desktop/electron/`；原生端到端测试在 `desktop/tests/`。
 

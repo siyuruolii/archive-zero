@@ -2,7 +2,8 @@
 
 from pydantic import Field
 
-from ..models import StrictModel
+from reading_agent.domain.models import StrictModel
+
 from .base import ToolSpec
 from .filesystem import available
 

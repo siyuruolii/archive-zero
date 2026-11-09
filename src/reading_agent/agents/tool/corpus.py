@@ -3,7 +3,9 @@
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
 
-from ..models import HistoricalMaterial, Material, Task, Topic
+from reading_agent.domain.models import HistoricalMaterial, Material, Topic
+
+from ..models import Task
 
 
 @dataclass

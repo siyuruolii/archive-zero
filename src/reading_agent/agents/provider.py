@@ -11,7 +11,7 @@ import httpx
 from pydantic import Field, SecretStr, model_validator
 
 from reading_agent.agents.messages import sanitize_messages
-from reading_agent.agents.models import StrictModel, Text
+from reading_agent.domain.models import StrictModel, Text
 
 STREAM_BYTE_LIMIT = 8 * 1024 * 1024
 SSE_FRAME_BYTE_LIMIT = 64 * 1024

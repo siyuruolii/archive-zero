@@ -2,10 +2,10 @@
 
 from pydantic import Field
 
+from reading_agent.domain.models import StrictModel
 from reading_agent.infrastructure.workspace import WorkspaceError
 from reading_agent.storage.database import Conflict
 
-from ..models import StrictModel
 from .base import ToolSpec, error
 
 

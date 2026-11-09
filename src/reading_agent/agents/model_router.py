@@ -4,7 +4,8 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from .models import StrictModel
+from reading_agent.domain.models import StrictModel
+
 from .provider import ChatProvider, Settings
 
 Stage = Literal[

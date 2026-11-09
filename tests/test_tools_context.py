@@ -7,10 +7,11 @@ from test_sessions_memory import append
 
 from reading_agent.agents.context import build_context
 from reading_agent.agents.harness import Harness
-from reading_agent.agents.models import DeepFinal, HistoricalMaterial, RouteFinal, Task
+from reading_agent.agents.models import DeepFinal, RouteFinal, Task
 from reading_agent.agents.provider import ProviderError, ToolCall, Turn
 from reading_agent.agents.tool import ToolSession
 from reading_agent.agents.tool.registry import REGISTRY
+from reading_agent.domain.models import HistoricalMaterial
 
 
 @pytest.mark.parametrize(

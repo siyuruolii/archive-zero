@@ -10,12 +10,13 @@ from pydantic import Field
 
 from reading_agent.agents.harness import Budget, Harness
 from reading_agent.agents.model_router import stage_provider
-from reading_agent.agents.models import Material, StrictModel, Task, Topic
+from reading_agent.agents.models import Task
 from reading_agent.agents.tool import Corpus
+from reading_agent.domain.models import Material, StrictModel, Topic
 from reading_agent.infrastructure.locking import FileLock
 from reading_agent.storage.database import Conflict, identity, now
 
-from .memory import READING_FOLDERS, MemoryDocument
+from .memory.models import READING_FOLDERS, MemoryDocument
 
 
 class ConsolidationPolicy(StrictModel):

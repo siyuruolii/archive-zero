@@ -20,10 +20,10 @@ import httpx
 
 from reading_agent.agents.harness import Harness
 from reading_agent.agents.model_router import ModelRouter
-from reading_agent.agents.models import Material, Topic
 from reading_agent.agents.permission import PermissionPolicy
 from reading_agent.agents.prompts import PROMPT_VERSION, RuntimeEnvironment
 from reading_agent.agents.tool import Corpus
+from reading_agent.domain.models import Material, Topic
 from reading_agent.infrastructure.configuration import load_catalog
 from reading_agent.infrastructure.workspace import Workspace
 from reading_agent.services.memory import Memory
@@ -76,9 +76,9 @@ async def execute_case(case, provider, folder, topics, as_of):
         memory = Memory(store, None, consolidation_policy=ConsolidationPolicy(enabled=False))
         count = itertools.count()
         with (
-            patch("reading_agent.services.memory.now", lambda: as_of),
+            patch("reading_agent.services.memory.service.now", lambda: as_of),
             patch(
-                "reading_agent.services.memory.identity",
+                "reading_agent.services.memory.service.identity",
                 lambda: digest((case.id + str(next(count))).encode())[:32],
             ),
         ):

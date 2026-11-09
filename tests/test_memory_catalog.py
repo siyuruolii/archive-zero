@@ -141,7 +141,7 @@ async def test_interrupted_layout_migration_can_resume_without_losing_records(st
         return original_replace(source, target)
 
     with monkeypatch.context() as patch:
-        patch.setattr("reading_agent.services.memory.os.replace", interrupt)
+        patch.setattr("reading_agent.services.memory.documents.os.replace", interrupt)
         with pytest.raises(OSError, match="interruption"):
             memory.rebuild()
     assert memory.rebuild() == 2
@@ -163,7 +163,7 @@ async def test_catalog_write_failure_preserves_committed_document_and_rebuild_re
         return original_replace(source, target)
 
     with monkeypatch.context() as patch:
-        patch.setattr("reading_agent.services.memory.os.replace", fail_index)
+        patch.setattr("reading_agent.services.memory.documents.os.replace", fail_index)
         with pytest.raises(OSError, match="catalogue"):
             memory.add("记忆文件已提交", topic_id=tid, kind="agent_reading")
     files = list((catalog.parent / "entries").glob("*.md"))

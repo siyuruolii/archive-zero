@@ -8,11 +8,10 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field
 
 from reading_agent.agents.model_router import ModelCatalog, ModelRouter
 from reading_agent.agents.provider import ChatProvider, ProviderError
@@ -34,72 +33,10 @@ from reading_agent.services.memory import Memory
 from reading_agent.services.sessions import Sessions
 from reading_agent.storage.database import Conflict, NotFound, Store, identity
 
-
-class Input(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    name: str = Field(default="", max_length=200)
-    description: str = Field(default="", max_length=4000)
-    url: str = Field(default="", max_length=2000)
-    topic_id: str | None = None
-    topic_ids: list[str] = Field(default_factory=list, max_length=20)
-    policy: str = "none"
-    selected_keys: list[str] = Field(default_factory=list, max_length=200)
-    enabled: bool | None = None
-    linked: bool = True
-    removed: bool = False
-    is_read: bool | None = None
-    interest: str | None = None
-    tag_ids: list[str] | None = None
-    question: str = Field(default="", max_length=8000)
-    expected_leaf: str = ""
-    expected_run_id: str = ""
-    entry_id: str = ""
-    content: str = Field(default="", max_length=2000)
-    kind: str = "profile"
-    approved: bool = False
-
-
-def run_event_response(request, run, queue, snapshot):
-    async def generate():
-        try:
-            yield (
-                "data: "
-                + json.dumps({"type": "snapshot", "data": snapshot}, ensure_ascii=False)
-                + "\n\n"
-            )
-            if not run or not snapshot or snapshot["phase"] != "running":
-                return
-            while not await request.is_disconnected():
-                try:
-                    event = await asyncio.wait_for(queue.get(), timeout=15)
-                    yield "data: " + json.dumps(event, ensure_ascii=False) + "\n\n"
-                    if (
-                        event["type"] == "status" and event.get("phase") not in {None, "running"}
-                    ) or (
-                        event["type"] == "snapshot"
-                        and event.get("data", {}).get("phase") not in {None, "running"}
-                    ):
-                        return
-                except TimeoutError:
-                    if run.phase != "running":
-                        yield (
-                            "data: "
-                            + json.dumps(
-                                {"type": "snapshot", "data": run.snapshot()}, ensure_ascii=False
-                            )
-                            + "\n\n"
-                        )
-                        return
-                    yield ": heartbeat\n\n"
-        finally:
-            if run:
-                run.subscribers.discard(queue)
-
-    return StreamingResponse(
-        generate(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-    )
+from .routes.common import Input
+from .routes.materials import register as register_materials
+from .routes.memory import register as register_memory
+from .routes.sessions import register as register_sessions
 
 
 class Jobs:
@@ -309,109 +246,7 @@ def create_app(*, directory=None, token=None, provider=None, fetcher=None):
             "memory_error": memory.last_extraction_error,
         }
 
-    @app.post("/api/topics")
-    async def add_topic(body: Input):
-        return {"id": store.topic(body.name, body.description)}
-
-    @app.post("/api/topics/{tid}/tags")
-    async def add_tag(tid: str, body: Input):
-        return {"id": store.tag(tid, body.name, body.description)}
-
-    @app.patch("/api/topics/{tid}")
-    async def update_topic(tid: str, body: Input):
-        if not body.name.strip():
-            raise ValueError("name required")
-        with store.transaction() as db:
-            store.require(db, "topics", tid)
-            db.execute(
-                "UPDATE topics SET name=?,description=? WHERE id=?",
-                (body.name, body.description, tid),
-            )
-        return {"status": "saved"}
-
-    @app.post("/api/sources/preview")
-    async def preview(body: Input):
-        from dataclasses import asdict
-
-        return [asdict(i) for i in await service.fetcher.feed(body.url)]
-
-    @app.post("/api/sources")
-    async def add_source(body: Input):
-        return jobs.start(
-            lambda: service.add_source(
-                body.name, body.url, body.topic_ids, body.policy, body.selected_keys
-            )
-        )
-
-    @app.patch("/api/sources/{sid}")
-    async def source_state(sid: str, body: Input):
-        service.source_state(sid, enabled=body.enabled, removed=body.removed)
-        return {"status": "saved"}
-
-    @app.put("/api/sources/{sid}/topics/{tid}")
-    async def link(sid: str, tid: str, body: Input):
-        store.link(tid, sid, body.linked)
-        return {"status": "saved"}
-
-    @app.post("/api/sources/{sid}/fetch")
-    async def fetch(sid: str):
-        return jobs.start(lambda: service.fetch(sid))
-
-    @app.get("/api/sources/{sid}/history")
-    async def source_history(sid: str):
-        return await service.history(sid)
-
-    @app.post("/api/sources/{sid}/history")
-    async def import_source_history(sid: str, body: Input):
-        return jobs.start(lambda: service.import_history(sid, body.selected_keys))
-
-    @app.get("/api/jobs/{jid}")
-    async def job(jid: str):
-        if jid not in jobs.items:
-            raise HTTPException(404, "job not found; interrupted jobs are not replayed")
-        return jobs.items[jid]
-
-    @app.get("/api/materials")
-    async def materials():
-        return store.materials()
-
-    @app.post("/api/materials/{mid}/route")
-    async def route(mid: str):
-        return jobs.start(lambda: service.route(mid))
-
-    @app.post("/api/materials/{mid}/import")
-    async def import_material(mid: str, body: Input):
-        if not body.topic_id:
-            raise ValueError("target Topic required")
-        return jobs.start(lambda: service.route(mid, target=body.topic_id))
-
-    @app.get("/api/topics/{tid}/inbox")
-    async def inbox(tid: str, recommended: bool = False, tags: str = "", untagged: bool = False):
-        return store.inbox(
-            tid, recommended=recommended, tags=tags.split(",") if tags else (), untagged=untagged
-        )
-
-    @app.patch("/api/topic-materials/{tm_id}")
-    async def feedback(tm_id: str, body: Input):
-        store.feedback(tm_id, is_read=body.is_read, interest=body.interest, tag_ids=body.tag_ids)
-        if body.is_read is True:
-            memory.experience(tm_id, "read")
-        if body.interest in {"interested", "uninterested"}:
-            memory.experience(tm_id, body.interest)
-        return {"status": "saved"}
-
-    @app.post("/api/topic-materials/{tm_id}/deep-read")
-    async def deep_read(tm_id: str, body: Input):
-        return jobs.start(lambda: service.deep_read(tm_id, question=body.question))
-
-    @app.get("/api/topic-materials/{tm_id}/deep-read/events")
-    async def deep_read_events(tm_id: str, request: Request):
-        run, queue, snapshot = service.subscribe_deep(tm_id)
-        return run_event_response(request, run, queue, snapshot)
-
-    @app.post("/api/topic-materials/{tm_id}/deep-read/cancel")
-    async def cancel_deep_read(tm_id: str):
-        return await service.cancel_deep_read(tm_id)
+    register_materials(app, store, service, jobs, memory)
 
     @app.get("/api/workspace/events")
     async def workspace_events(request: Request):
@@ -476,126 +311,9 @@ def create_app(*, directory=None, token=None, provider=None, fetcher=None):
         # 在途任务仍按原 ID 保存，删除保护是事务检查而非仅靠取消信号。
         return {"status": "deleted"}
 
-    @app.get("/api/topic-materials/{tm_id}/sessions")
-    async def list_sessions(tm_id: str):
-        return store.all(
-            """SELECT s.id session_id,b.* FROM sessions s JOIN branches b ON b.session_id=s.id
-                    WHERE s.topic_material_id=? ORDER BY b.created_at""",
-            (tm_id,),
-        )
+    register_sessions(app, store, sessions, discussion)
 
-    @app.get("/api/topics/{tid}/discussions")
-    async def topic_discussions(tid: str, limit: int = Query(default=30, ge=1, le=50)):
-        with store.transaction() as db:
-            store.require(db, "topics", tid)
-        return store.all(
-            "SELECT b.id,b.session_id,b.title branch_title,s.topic_material_id,tm.topic_id,"
-            "m.title material_title,e.created_at updated_at "
-            "FROM branches b JOIN sessions s ON s.id=b.session_id "
-            "JOIN topic_materials tm ON tm.id=s.topic_material_id "
-            "JOIN materials m ON m.id=tm.material_id JOIN entries e ON e.id=b.leaf_entry_id "
-            "WHERE tm.topic_id=? ORDER BY e.created_at DESC,b.id LIMIT ?",
-            (tid, limit),
-        )
-
-    @app.post("/api/topic-materials/{tm_id}/sessions")
-    async def create_session(tm_id: str):
-        return sessions.create(tm_id)
-
-    @app.get("/api/branches/{bid}")
-    async def branch(bid: str):
-        path = sessions.path(bid)
-        run = discussion.runs.get(bid)
-        return {
-            "entries": path,
-            "leaf_id": path[-1]["id"],
-            "run": run.snapshot() if run else None,
-            "last_run": sessions.last_run(bid),
-            "recovery": discussion.recovery_info(bid),
-        }
-
-    @app.get("/api/sessions/{sid}/events")
-    async def session_events(
-        sid: str,
-        after: int = Query(default=0, ge=0),
-        limit: int = Query(default=100, ge=1, le=200),
-        run_id: str | None = None,
-    ):
-        return sessions.events(sid, after=after, limit=limit, run_id=run_id)
-
-    @app.post("/api/branches/{bid}/messages")
-    async def message(bid: str, body: Input):
-        return {"run_id": discussion.start(bid, body.question, expected_leaf=body.expected_leaf)}
-
-    @app.post("/api/branches/{bid}/stop")
-    async def stop(bid: str):
-        await discussion.stop(bid)
-        return {"status": "stopped"}
-
-    @app.post("/api/branches/{bid}/resume")
-    async def resume_branch(bid: str, body: Input):
-        return {"run_id": discussion.resume(bid, body.expected_run_id)}
-
-    @app.post("/api/branches/{bid}/fork")
-    async def fork(bid: str, body: Input):
-        return {"id": sessions.fork(bid, body.entry_id, body.name or "分支讨论")}
-
-    @app.post("/api/branches/{bid}/compact")
-    async def compact(bid: str):
-        run = discussion.runs.get(bid)
-        if run and run.phase == "running":
-            raise Conflict("stop current discussion before compression")
-        return {"leaf_id": await discussion.compact(bid)}
-
-    @app.delete("/api/branches/{bid}")
-    async def delete_branch(bid: str):
-        await discussion.stop(bid)
-        sessions.delete_branch(bid)
-        return {"status": "deleted"}
-
-    @app.get("/api/branches/{bid}/events")
-    async def events(bid: str, request: Request):
-        sessions.path(bid)
-        run, queue, snapshot = discussion.subscribe(bid)
-
-        return run_event_response(request, run, queue, snapshot)
-
-    @app.get("/api/memories")
-    async def memories(topic_id: str | None = None, category: str | None = None):
-        return memory.list(topic_id, category=category, limit=20)
-
-    @app.get("/api/memory/consolidation")
-    async def consolidation_status():
-        return {
-            **memory.consolidator.status(),
-            "scheduler_error": getattr(app.state, "memory_scheduler_error", None),
-        }
-
-    @app.get("/api/session-memory/search")
-    async def session_memory_search(
-        query: str = Query(default="", max_length=200),
-        topic_id: str | None = None,
-        limit: int = Query(default=3, ge=1, le=5),
-    ):
-        # 浏览接口只检索片段；模型提炼由 Agent 工具按需触发并计入 Loop 预算。
-        return memory.search_sessions(query, topic_id=topic_id, limit=limit)
-
-    @app.post("/api/memories")
-    async def add_memory(body: Input):
-        return {"id": memory.add(body.content, topic_id=body.topic_id)}
-
-    @app.patch("/api/memories/{mid}")
-    async def correct_memory(mid: str, body: Input):
-        return {"id": memory.correct(mid, body.content)}
-
-    @app.delete("/api/memories/{mid}")
-    async def delete_memory(mid: str):
-        memory.delete(mid)
-        return {"status": "deleted"}
-
-    @app.get("/api/memories/{mid}/evidence")
-    async def evidence(mid: str):
-        return memory.evidence(mid)
+    register_memory(app, memory)
 
     frontend = Path(
         os.environ.get(
