@@ -24,6 +24,8 @@
 
 验收在独立完整源码副本中运行 `Archive Zero.exe --prepare-only`，再运行 `powershell -File scripts/test-launcher.ps1 -PreparedRoot <副本绝对路径>`，验证缓存复用与 Windows EXE 解锁交接；然后运行 `node desktop/tests/launcher-smoke.cjs <副本绝对路径>`；移除系统 Python/Node PATH，验证项目本地环境和界面。`npm test` 中的 source-update 用真实临时 Git 仓库验证快进、脏工作区、错误分支、错误远程及分叉保护。不能用替身或本机验收替代独立干净 Windows 机器验收。
 
+另运行 `node desktop/tests/exe-startup-smoke.cjs <artifacts 内已准备副本的绝对路径>`，直接执行 EXE，不传 `--prepare-only`，验证实际窗口可见、页面、IPC 和图片。脚本仅临时插桩该可丢弃副本，使用全新隔离资料并在结束时恢复源码；不能指向日常或开发根目录。GUI 应用的 Electron 启动不得使用 `-WindowStyle Hidden`，该选项会影响应用窗口本身；控制台隐藏由外层启动器处理。
+
 日常 EXE 默认 `data/`，开发脚本和源码 CLI 默认 `.dev-data/`。开发副本的 `.development.json` 标记让 EXE 复用 `.venv` 与已安装 Node，日志放 `.dev-data/launcher/`，不新增托管 Python。数据与浏览器 profile 隔离：日常 bootstrap 设置 `AGENT_PROFILE_DIR=data/desktop-profile`，开发入口设置为开发数据目录下的 profile，显式 `AGENT_DATA_DIR` 仍优先。迁移旧资料属于实际数据操作，必须停止旧后端、持有 backend.lock、备份 SQLite 与 MD/JSONL、核对文件摘要；禁止用正式资料进行测试。
 
 运行 `node desktop/tests/instance-isolation-smoke.cjs` 验证两份进程并行、profile 不同与主题数据不互相出现。预览启动器可使用 `Archive Zero.exe --preview <绝对 PNG 路径>`，不启动后端或读取用户资料。

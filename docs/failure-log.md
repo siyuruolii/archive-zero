@@ -390,3 +390,10 @@ F013 桌面复验补记：实际 Electron 冒烟测试已通过，覆盖管理�
 - 已确认原因：启动器从 PowerShell Core 环境继承了不适用于系统 Windows PowerShell 的 PSModulePath；另一个独立原因是锁定的 Electron 45 npm 包不含自动 postinstall，npm ci 成功并不代表桌面二进制已下载。不是 API Key、用户数据或模型错误。
 - 修复：仅对子进程移除继承的 PSModulePath，让系统 PowerShell 使用自有模块；bootstrap 显式执行 Electron 的 install.js，确认 exe 存在后才记录依赖成功。npm start 同步增加 prepare:electron，修复源码首次启动的相同缺口。
 - 复验：修复后的真实 EXE --prepare-only 在无系统 Python/Node PATH、含中文与空格的独立目录通过；本地 Python、Node、Electron 下载与校验、依赖安装、前端构建完成。项目本地环境的桌面启动、建主题、图标与更新错误反馈通过；无系统 Python/Node PATH 的 EXE 再启动缓存复用通过（本机 2.2 秒），Windows 更新工作进程交接后可独占打开被跟踪 EXE。10 项桌面单元测试及 workspace/recovery smoke 通过，后端 377 通过、15 条真实模型/Docker 条件跳过；未读写正式 .local/、未调用收费模型。尚未在独立干净 Windows 机器或实际远程新版本完整更新链路验收。
+## F040：启动器把隐藏窗口参数传给桌面应用
+
+- 日期：2026-11-09。用户从桌面快捷方式打开后看到空白深色窗口；诊断时后端和前端静态文件均正常响应，触发窗口重新绘制后界面显示。
+- 已确认原因：bootstrap 的开发与日常两条启动路径都向 Electron 传入 `-WindowStyle Hidden`。在独立已准备副本中，通过真实 EXE → PowerShell → Electron 链路复现：页面、IPC 与图片均就绪，但 `BrowserWindow.isVisible()` 为 false。是否还有 GPU/驱动因素没有证据，不作为已确认原因。
+- 验收缺口：此前 `--prepare-only` 检查只覆盖准备环境，Playwright 直接启动 Electron 绕过了 PowerShell 的窗口参数，均不能证明桌面快捷方式完整链路正确。
+- 修复：移除两处 Electron 的隐藏窗口参数；外层启动器仍不显示命令行窗口。新增 exe-startup-smoke，使用 artifacts 内副本和全新数据直接运行 EXE，检查窗口可见、页面、IPC 和图片，结束后恢复副本源码。
+- 复验：同一已准备副本中，修复前窗口可见断言失败，修复后全部通过；使用隔离资料，未调用收费模型。尚不等于独立干净 Windows 机器或全部显卡组合验收。

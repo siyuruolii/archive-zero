@@ -69,7 +69,8 @@ try {
             Write-Output 'Building development reading room...'
             Run-Step $devNode @($devNpm,'--prefix',(Join-Path $projectDirectory 'desktop'),'run','prepare:electron')
             Run-Step $devNode @($devNpm,'--prefix',(Join-Path $projectDirectory 'desktop'),'run','build')
-            if (-not $PrepareOnly) { Start-Process -FilePath (Join-Path $projectDirectory 'desktop/node_modules/electron/dist/electron.exe') -ArgumentList ('"{0}"' -f (Join-Path $projectDirectory 'desktop')) -WorkingDirectory $projectDirectory -WindowStyle Hidden | Out-Null }
+            # Electron is a GUI process: hiding its startup window also hides the app, not just a console.
+            if (-not $PrepareOnly) { Start-Process -FilePath (Join-Path $projectDirectory 'desktop/node_modules/electron/dist/electron.exe') -ArgumentList ('"{0}"' -f (Join-Path $projectDirectory 'desktop')) -WorkingDirectory $projectDirectory | Out-Null }
             Write-Output 'Preparation complete.'
             exit 0
         }
@@ -136,6 +137,6 @@ try {
         if ($PrepareOnly) { Write-Output 'Preparation complete.'; exit 0 }
         Write-Output 'Opening Archive Zero...'
         $env:AGENT_PYTHON = $envPython
-        Start-Process -FilePath $electron -ArgumentList ('"{0}"' -f $desktop) -WorkingDirectory $desktop -WindowStyle Hidden | Out-Null
+        Start-Process -FilePath $electron -ArgumentList ('"{0}"' -f $desktop) -WorkingDirectory $desktop | Out-Null
     } finally { Pop-Location; if ($lock) { $lock.Dispose() } }
 } catch { Write-Output ('ERROR: ' + $_.Exception.Message); exit 1 }
