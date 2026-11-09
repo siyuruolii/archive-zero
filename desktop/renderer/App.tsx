@@ -9,6 +9,8 @@ import { MaterialPanel } from './MaterialPanel';
 import { SourceHistory } from './SourceHistory';
 import { DeepRead } from './DeepRead';
 import { CommandApprovals } from './CommandApprovals';
+import { ReadingHome } from './ReadingHome';
+import { AppearanceSettings, useAppearance } from './AppearanceSettings';
 import { Icon, Notice, trapFocus } from './ui';
 
 export default function App() {
@@ -17,6 +19,9 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('models');
   const [panelOpen, setPanelOpen] = useState(true);
+  const [homeOpen, setHomeOpen] = useState(false);
+  const [focusReading, setFocusReading] = useState(false);
+  const appearanceSettings = useAppearance();
   const [displayMode, setDisplayMode] = useState('discuss');
   const [discussions, setDiscussions] = useState<Row[]>([]);
   const [rawItems, setRawItems] = useState<Row[]>([]);
@@ -211,11 +216,12 @@ export default function App() {
     setStreamStatus(''); load(); connect();
     return () => { active = false; stop(); if (timer !== undefined) clearTimeout(timer); };
   }, [branch, streamEpoch]);
-  async function choose(item: Row, requestedBranch?: string) {
+  async function choose(item: Row, requestedBranch?: string, view = 'discuss') {
     if (item.topic_id !== topicRef.current) return;
     chosenMaterial.current = item.id;
+    setHomeOpen(false);
     if (selected?.id !== item.id || (requestedBranch && requestedBranch !== branch)) setQuestion('');
-    setSelected(item); setBranch(''); setBranches([]); setDisplayMode('discuss');
+    setSelected(item); setBranch(''); setBranches([]); setDisplayMode(view);
     const data = await api(`/api/topic-materials/${item.id}/sessions`);
     if (item.topic_id !== topicRef.current || chosenMaterial.current !== item.id) return;
     setBranches(data);
@@ -262,13 +268,13 @@ export default function App() {
   }
   const clearNotice = () => { setError(''); setNotice(''); };
 
-  return <div className="app">
+  return <div className={"app sky-room" + (focusReading ? " focus-reading" : "")} data-motion={appearanceSettings.appearance.motion}>
     <Sidebar topics={state.topics} topic={topic} discussions={discussions} branch={branch} model={state.model}
       onTopic={setTopic} onDiscussion={row => { void openDiscussion(row); }} onCreate={() => setForm('topic')} onSettings={() => openSettings()}/>
     <main className="workspace">
       <header className="workspace-header">
         <div className="workspace-breadcrumb"><Icon name="folder"/><h1>{current?.name || 'Archive Zero'}</h1><span className="header-description" title={current?.description}>{current?.description}</span></div>
-        <div className="header-actions"><button className={'panel-toggle' + (panelOpen ? ' selected' : '')} aria-pressed={panelOpen} aria-label="切换材料列表" onClick={() => setPanelOpen(!panelOpen)}><Icon name="panel" size={16}/><span>材料</span></button>
+        <div className="header-actions">{selected && <><button className="home-toggle" onClick={() => setHomeOpen(!homeOpen)}>{homeOpen ? '返回当前材料' : '主题首页'}</button>{!homeOpen && <button className={'focus-toggle' + (focusReading ? ' selected' : '')} aria-pressed={focusReading} onClick={() => setFocusReading(!focusReading)}>{focusReading ? '退出专注' : '专注阅读'}</button>}</>}<button className={'panel-toggle' + (panelOpen && !focusReading ? ' selected' : '')} aria-pressed={panelOpen && !focusReading} aria-label="切换材料列表" onClick={() => { if (focusReading) { setFocusReading(false); setPanelOpen(true); } else setPanelOpen(!panelOpen); }}><Icon name="panel" size={16}/><span>材料</span></button>
           <button className="icon-button" title="刷新" aria-label="刷新" onClick={() => action(async () => {}, '已刷新')}><Icon name="refresh" size={16}/></button>
           {current && <details className="action-menu"><summary aria-label="Topic 操作"><Icon name="more"/></summary><div><button onClick={() => setForm('topic-edit')}>编辑主题</button><button className="danger" onClick={() => remove('topics', topic)}>删除主题</button></div></details>}
         </div>
@@ -277,7 +283,7 @@ export default function App() {
       {working && !settingsOpen && <div className="progress" role="status">正在处理，请稍候…</div>}
       <div className="workspace-body">
         <section className="workspace-canvas" aria-label="阅读与讨论">
-          {!selected ? <div className="workspace-empty"><span className="empty-book"><Icon name="book" size={30}/></span><p className="empty-eyebrow">{current?.name || '零号档案'}</p><h2>从一份材料，开始理解</h2><p>{current?.description || '将关注的内容放进 Topic，阅读原文，再围绕具体问题展开讨论。'}</p><div className="empty-actions"><button className="primary" onClick={() => { if (current) openSettings('sources'); else setForm('topic'); }}>{current ? '添加阅读来源' : '创建第一个 Topic'}</button><button onClick={() => setPanelOpen(true)}>浏览材料</button></div><span className="empty-hint">{items.length ? '从右侧选择一份材料，或从左侧继续最近的讨论。' : '模型和阅读源都可以在左下角的设置中管理。'}</span></div> : <>
+          {!selected || homeOpen ? <ReadingHome topic={current} items={items} character={appearanceSettings.appearance.character} onChoose={item => { void choose(item, undefined, 'read').catch(e => setError(e.message)); }} onCreate={() => setForm('topic')} onSources={() => openSettings('sources')} onBrowse={() => { setFocusReading(false); setPanelOpen(true); }}/> : <>
             <div className="material-heading"><div className="material-heading-text"><small>当前材料</small><h2>{selected.title}</h2></div><div className="material-actions">
               <button onClick={() => action(() => api(`/api/topic-materials/${selected.id}`, 'PATCH', { is_read: !selected.is_read }))}>{selected.is_read ? '标为未读' : '标为已读'}</button>
               <button disabled={working || startingDeep === selected.id || selected.deep_summary_status === 'running' || !!selected.deep_summary} onClick={() => startDeep(selected.id)}>精读 / 重试</button>
@@ -303,7 +309,7 @@ export default function App() {
             </section>}
           </>}
         </section>
-        {panelOpen && <MaterialPanel items={items} selected={selected} tags={topicTags} filterTags={tags} mode={mode} onMode={setMode} onTag={id => setTags(tags.includes(id) ? tags.filter(item => item !== id) : [...tags, id])} onChoose={item => { void choose(item).catch(e => setError(e.message)); }} onAddTag={() => setForm('tag')} onRemoveTag={id => remove('tags', id)} onSources={() => openSettings('sources')} onClose={() => setPanelOpen(false)}/>}
+        {panelOpen && !focusReading && <MaterialPanel character={appearanceSettings.appearance.character && !!selected && !homeOpen} items={items} selected={selected} tags={topicTags} filterTags={tags} mode={mode} onMode={setMode} onTag={id => setTags(tags.includes(id) ? tags.filter(item => item !== id) : [...tags, id])} onChoose={item => { void choose(item).catch(e => setError(e.message)); }} onAddTag={() => setForm('tag')} onRemoveTag={id => remove('tags', id)} onSources={() => openSettings('sources')} onClose={() => setPanelOpen(false)}/>}
       </div>
     </main>
     {settingsOpen && <SettingsShell section={settingsTab} onSection={setSettingsTab} onClose={() => setSettingsOpen(false)}>
@@ -313,7 +319,7 @@ export default function App() {
       {settingsTab === 'raw' && <section className="page"><p>导入目标：<select aria-label="导入主题" value={importTopic} onChange={e => setImportTopic(e.target.value)}>{state.topics.map((t: Row) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></p>{rawItems.map(item => <div className="source" key={item.id}><h2>{item.title}</h2><p>{item.source_summary}</p><small>被 {item.reference_count} 个主题引用 · 路由：{item.routing_status}</small>{item.routing_error && <p className="error-text">{item.routing_error}</p>}<div className="toolbar"><button disabled={!importTopic || working} onClick={() => action(() => api(`/api/materials/${item.id}/import`, 'POST', { topic_id: importTopic }).then(waitJob), '导入完成')}>导入所选主题</button><button disabled={working} onClick={() => action(() => api(`/api/materials/${item.id}/route`, 'POST').then(waitJob), '路由已重试')}>重试路由</button><button disabled={item.reference_count > 0} onClick={() => remove('materials', item.id)}>删除原始材料</button></div></div>)}</section>}
       {settingsTab === 'memory' && <section className="page"><label className="scope-select">查看范围<select aria-label="记忆查看范围" value={memoryTopic} onChange={e => setMemoryTopic(e.target.value)}><option value="">仅全局记忆</option>{state.topics.map((item: Row) => <option key={item.id} value={item.id}>{item.name} + 全局</option>)}</select></label><button className="primary" onClick={() => { setEditingMemory(null); setForm('memory'); }}>添加明确背景或偏好</button><p className="muted">显示当前主题与明确全局记忆。删除依据不会删除既存记忆；更正后旧画像退出召回。</p>{state.memory_error && <p className="error-text">最近一次记忆提炼失败：{state.memory_error}，可手动补记。</p>}{memories.map(m => <div className="source" key={m.id}><small>{m.scope === 'global' ? '全局' : '当前主题'} · {m.kind === 'profile' ? '背景与偏好' : '可确认经历'}</small><p>{m.content}</p><div className="toolbar"><button onClick={() => { setEditingMemory(m); setForm('memory'); }}>更正</button><button onClick={() => action(() => api('/api/memories/' + m.id, 'DELETE'))}>删除记忆</button><button onClick={() => action(async () => { const refs = await api(`/api/memories/${m.id}/evidence`); setNotice(refs.length ? refs.map((r: Row) => r.message).join('；') : '用户主动提供，无外部依据引用'); }, '')}>查看依据状态</button></div></div>)}</section>}
 
-      {settingsTab === 'general' && <section className="page general-settings"><h3>Archive Zero · 零号档案</h3><p>以 Topic 整理关注的内容，在材料之间积累理解。</p><div className="setting-row"><div><strong>关闭窗口</strong><p className="muted">关闭后留在托盘，已经开始的任务继续执行。</p></div><span>保持运行</span></div><div className="setting-row"><div><strong>数据与记忆</strong><p className="muted">阅读记录与记忆保存在本机。更换模型不会清空已有讨论。</p></div><span>本地保存</span></div>{window.reader && <button onClick={() => window.reader?.quit()}>退出应用</button>}</section>}
+      {settingsTab === 'general' && <section className="page general-settings"><h3>Archive Zero · 零号档案</h3><p>以 Topic 整理关注的内容，在材料之间积累理解。</p><AppearanceSettings {...appearanceSettings}/><div className="setting-row"><div><strong>关闭窗口</strong><p className="muted">关闭后留在托盘，已经开始的任务继续执行。</p></div><span>保持运行</span></div><div className="setting-row"><div><strong>数据与记忆</strong><p className="muted">阅读记录与记忆保存在本机。更换模型不会清空已有讨论。</p></div><span>本地保存</span></div>{window.reader && <button onClick={() => window.reader?.quit()}>退出应用</button>}</section>}
     </SettingsShell>}
     <CommandApprovals items={approvals} onRefresh={loadApprovals}/>
     {form && <div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setForm(''); }}><form className="modal" role="dialog" aria-modal="true" onKeyDown={trapFocus} aria-label={({ topic: '添加主题', 'topic-edit': '编辑主题', tag: '添加标签', source: '添加阅读来源', memory: '添加记忆' } as Row)[form]} onSubmit={submitForm}>

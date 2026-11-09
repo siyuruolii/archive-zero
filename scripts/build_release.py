@@ -1,4 +1,4 @@
-"""Windows x64 便携包：只复制明确的产物，不读取用户资料或凭据。"""
+"""仅在本机构建 Windows x64 便携包；不创建 GitHub Release 或上传产物。"""
 
 import hashlib
 import json
@@ -60,6 +60,10 @@ def main():
     app = bundle / "resources/app"
     shutil.copytree(ROOT / "desktop/electron", app / "electron")
     shutil.copytree(ROOT / "desktop/dist", app / "dist")
+    brand = app / "assets/brand"
+    brand.mkdir(parents=True)
+    for name in ("archive-zero-icon.png", "archive-zero-icon-32.png", "archive-zero.ico"):
+        shutil.copy2(ROOT / "desktop/assets/brand" / name, brand / name)
     metadata = json.loads((ROOT / "desktop/package.json").read_text())
     metadata = {key: metadata[key] for key in ("name", "productName", "version", "main")}
     (app / "package.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")

@@ -1,0 +1,53 @@
+const { _electron: electron, expect } = require('@playwright/test');
+const path = require('node:path');
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
+
+(async () => {
+  const root = path.resolve(__dirname, '../..');
+  const directory = fs.mkdtempSync(path.join(root, 'artifacts/appearance-desktop-'));
+  execFileSync(path.join(root, '.venv/Scripts/python.exe'), ['-X', 'utf8', path.join(root, 'tests/desktop_fixture.py'), directory], { cwd: root });
+  const launch = () => electron.launch({ args: [path.join(root, 'desktop')], env: { ...process.env, AGENT_DATA_DIR: directory, AGENT_API_KEY: '', AGENT_TEST_MODE: '1' }, timeout: 40000 });
+  let app = await launch();
+  const errors = [];
+  try {
+    let page = await app.firstWindow();
+    page.on('pageerror', e => errors.push(e.message));
+    await page.getByRole('button', { name: '开始阅读', exact: true }).waitFor();
+    for (const image of ['.brand-mascot', '.welcome-character']) assert.ok(await page.locator(image).evaluate(im => im.complete && im.naturalWidth > 0));
+    await page.screenshot({ path: path.join(root, 'artifacts/reading-room-home.png') });
+    await page.getByRole('button', { name: '开始阅读', exact: true }).click();
+    await page.getByRole('tab', { name: '讨论', exact: true }).click();
+    await page.getByLabel('讨论问题', { exact: true }).fill('切换首页、专注模式和外观后，保留这个草稿。');
+    const branch = await page.getByLabel('讨论分支', { exact: true }).inputValue();
+    await page.getByRole('button', { name: '主题首页', exact: true }).click();
+    await page.getByRole('button', { name: '返回当前材料', exact: true }).click();
+    await expect(page.getByLabel('讨论问题', { exact: true })).toHaveValue('切换首页、专注模式和外观后，保留这个草稿。');
+    assert.equal(await page.getByLabel('讨论分支', { exact: true }).inputValue(), branch);
+    await page.getByRole('button', { name: '专注阅读', exact: true }).click();
+    await expect(page.locator('.material-panel')).toHaveCount(0);
+    await page.getByRole('button', { name: '退出专注', exact: true }).click();
+    await expect(page.locator('.reading-companion')).toHaveCount(1);
+    await page.getByRole('button', { name: '设置', exact: true }).click();
+    await page.getByRole('button', { name: '通用', exact: true }).click();
+    await page.getByLabel('角色陪伴', { exact: true }).uncheck();
+    await page.getByLabel('页面动效', { exact: true }).uncheck();
+    await page.getByRole('button', { name: '关闭设置', exact: true }).click();
+    await expect(page.locator('.reading-companion')).toHaveCount(0);
+    await expect(page.getByLabel('讨论问题', { exact: true })).toHaveValue('切换首页、专注模式和外观后，保留这个草稿。');
+    await page.setViewportSize({ width: 980, height: 680 });
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await page.screenshot({ path: path.join(root, 'artifacts/reading-room-compact.png') });
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(directory, 'appearance.json'), 'utf8')), { character: false, motion: false });
+    await app.close();
+    app = await launch();
+    page = await app.firstWindow();
+    page.on('pageerror', e => errors.push(e.message));
+    await page.getByRole('button', { name: '开始阅读', exact: true }).waitFor();
+    await expect(page.locator('.welcome-character')).toHaveCount(0);
+    await expect(page.locator('.sky-room')).toHaveAttribute('data-motion', 'false');
+    assert.deepEqual(errors, []);
+    console.log('Character assets, home/draft/branch preservation, focus, compact layout and restart preferences: passed.');
+  } finally { await app.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

@@ -3,6 +3,7 @@ let sequence = 0;
 contextBridge.exposeInMainWorld('reader', {
   request: (path, method = 'GET', body) => ipcRenderer.invoke('api', { path, method, body }),
   quit: () => ipcRenderer.send('quit-app'),
+  appearance: value => ipcRenderer.invoke('appearance', value),
   subscribe: (branchId, listener) => {
     const id = Date.now() + '-' + (++sequence);
     let active = true;

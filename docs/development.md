@@ -38,7 +38,7 @@ node tests/recovery-smoke.cjs
 Pop-Location
 ```
 
-原生测试用隔离资料和本机模型替身；第二项真实终止进程并验证手动恢复不重复写文件。需要 npm 依赖中的 Electron/Playwright，不连接正式数据。按变更另选 source-history、workspace-updates、streaming、tool-approval 等原生 smoke 脚本。可离线跑 [Eval](../evals/README.md)：`python -m evals.runner --repeat 3`。
+原生测试用隔离资料和本机模型替身；第二项真实终止进程并验证手动恢复不重复写文件。需要 npm 依赖中的 Electron/Playwright，不连接正式数据。按变更另选 source-history、workspace-updates、streaming、tool-approval 等原生 smoke 脚本。外观与导航修改另跑 `node desktop/tests/appearance-smoke.cjs` 和 `node desktop/tests/workspace-smoke.cjs`，覆盖角色素材、首页往返草稿/分支保留、专注模式、紧凑布局和跨启动偏好持久化。可离线跑 [Eval](../evals/README.md)：`python -m evals.runner --repeat 3`。
 
 收费真实模型须另有用户授权，在已配置环境显式运行 `pytest tests/live -q --run-live`。真实 Docker 验收要求可信本机镜像，未配置必须跳过并报告；不能用命令参数断言冒充 OS 隔离验收。
 
@@ -65,16 +65,6 @@ Pop-Location
 ## 已知缺口
 
 尚无生产多租户部署、自动 Judge 或线上 A/B；路由与精读未接入跨进程持久化恢复，真实 Docker/srt 验收仍需配置。开放式输出的语义质量需要独立评审，不能根据结构测试数量推断。
-
-## Windows 便携发布
-
-源码发行包为 archive-zero，桌面包为 archive-zero-desktop。旧命令和内部 reading_agent 导入名保留兼容。发布包自带冻结 Python 后端与 Electron，不需要使用者安装 Python/Node。构建与启动方式见 README。
-
-安装 requirements-build.lock 后运行 scripts/build_release.py。构建器按明确清单收集前端、Electron、冻结后端和许可证，不收集个人数据、工作资料或凭据。发布产物位于被忽略的 release/，附 SHA256SUMS.txt。首版为未签名 Windows x64 ZIP 便携包，不含自动更新或安装程序。
-
-发布模式由 desktop/electron/runtime.cjs 选择内置后端，并明确传入前端资源与可写用户数据目录。命令工作进程通过 --shell-worker 分派，不能把冻结 EXE 当作普通 Python 解释器调用。
-
-验收命令：node desktop/tests/release-smoke.cjs <解压后的 EXE 路径>。测试使用空白独立资料目录，移除 Python/Node 的 PATH、移除 PYTHONPATH，设置无效 AGENT_PYTHON，验证真实 EXE、界面、Topic 写入和关闭隐藏到托盘。这不等同独立干净 Windows 虚拟机验收。
 
 ## 仓库文档与发布范围
 

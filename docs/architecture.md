@@ -52,6 +52,10 @@ flowchart TD
 
 前端在 `desktop/renderer/`，主进程和桥在 `desktop/electron/`；原生端到端测试在 `desktop/tests/`。
 
+桌面采用晴空阅览室主题：`ReadingHome.tsx` 使用当前 Topic 的真实材料与原有操作回调，`sky-theme.css` 负责视觉样式，`AppearanceSettings.tsx` 管理角色与动效开关。首页与专注模式不停止任务、不清空选中分支或问题草稿；材料筛选、精读、讨论、恢复及命令确认仍由原有组件处理。静态角色与图标来自 `desktop/assets/brand/`，不加载外部图片或字体。
+
+外观偏好通过受限 preload/IPC 交给 `electron/appearance.cjs`，校验布尔白名单并原子写入数据目录的 `appearance.json`，不依赖后端随机端口。它仅保存角色/动效偏好，不是 Agent 记忆。专注模式只在本次窗口内收起材料侧栏；系统减少动态效果设置优先。Vite 负责打包页面素材。
+
 ## 一轮任务
 
 1. 业务构造 Task 与 Corpus，经 Harness 统一入口。讨论从当前分支取得历史，绑定原用户问题和合法记忆。

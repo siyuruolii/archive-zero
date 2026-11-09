@@ -4,6 +4,7 @@ const { randomBytes } = require('node:crypto');
 const path = require('node:path');
 const { shouldHideOnClose, isApiRequest } = require('./lifecycle.cjs');
 const { backendRuntime } = require('./runtime.cjs');
+const { readAppearance, writeAppearance } = require('./appearance.cjs');
 let backend, window, tray, origin, quitting = false;
 const subscriptions = new Map();
 const token = randomBytes(32).toString('hex');
@@ -45,14 +46,14 @@ else {
       if (!ready) throw new Error('后端尚未就绪，请检查本地模型配置。');
       window = new BrowserWindow({ width: 1380, height: 920, minWidth: 980, minHeight: 680,
         show: process.env.AGENT_TEST_MODE !== '1',
-        backgroundColor: '#f1f5f9', title: 'Archive Zero · 零号档案',
+        icon: path.join(__dirname, '../assets/brand/archive-zero-icon.png'),
+        backgroundColor: '#f0f7fb', title: 'Archive Zero · 零号档案',
         webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true }
       });
       window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
       window.webContents.on('will-navigate', (event, url) => { if (new URL(url).origin !== origin) event.preventDefault(); });
       window.on('close', event => { if (shouldHideOnClose(quitting)) { event.preventDefault(); window.hide(); } });
-      // 嵌入式小图标不依赖远程图片或用户文件。
-      const icon = nativeImage.createFromBuffer(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGUlEQVQ4T2NkqFjzn4ECwESJ5lEDRg0YNYAAAOnnJQGviyRqAAAAAElFTkSuQmCC', 'base64'));
+      const icon = nativeImage.createFromPath(path.join(__dirname, '../assets/brand/archive-zero-icon-32.png'));
       tray = new Tray(icon);
       tray.setToolTip('Archive Zero · 零号档案');
       tray.setContextMenu(Menu.buildFromTemplate([
@@ -60,6 +61,11 @@ else {
         { type: 'separator' }, { label: '退出应用', click: () => app.quit() }
       ]));
       tray.on('double-click', () => window.show());
+      const appearanceDirectory = runtime.env.AGENT_DATA_DIR || path.join(root, '.local');
+      ipcMain.handle('appearance', (event, value) => {
+        if (event.sender !== window.webContents) throw new Error('请求不被允许');
+        return value === undefined ? readAppearance(appearanceDirectory) : writeAppearance(appearanceDirectory, value);
+      });
       ipcMain.handle('api', async (event, { path: requestPath, method, body }) => {
         if (event.sender !== window.webContents || !isApiRequest(requestPath, method)) throw new Error('请求不被允许');
         const response = await fetch(origin + requestPath, { method,
