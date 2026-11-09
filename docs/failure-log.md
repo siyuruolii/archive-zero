@@ -374,3 +374,19 @@ F013 桌面复验补记：实际 Electron 冒烟测试已通过，覆盖管理�
 - 现象与影响：本机 release/ 的递归删除、按明确子目录删除，以及仅删除指定 ZIP 的非递归操作均在执行前被自动审批检查拒绝；返回仅为 blocked by policy。本地目标仍存在，不能报告已完成清理。
 - 已确认：删除前已核对目标为项目内的绝对路径，release/ 及其三个产物子目录均不是重解析点；未涉及正式 .local/。尚不清楚执行策略的具体拒绝规则，不能把它归因为文件占用或权限不足。
 - 处理与限制：停止进一步删除尝试，保留用户数据、源码构建与可重现测试。文档改为源码运行入口；本地残留需用户手动清理。此项不影响已经通过的界面回归与仓库结构检查。
+
+
+## F038：系统 C# 编译器不支持确定性编译开关
+
+- 日期：2026-11-09。新增源码仓库双击启动器时，系统 .NET Framework 编译器拒绝 /deterministic，报 CS2007，未生成有效启动器。
+- 已确认原因：该旧版 csc 不支持此选项，不是图标格式或 C# 源码错误。
+- 修复：移除不受支持的开关，保留 x64、WinForms、优化与 UTF-8 参数，编译得到约 103 KB 的图标启动器。源码与重建脚本随仓库保存，不声称 EXE 字节级可复现或已签名。
+- 复验：独立含中文与空格路径中，真实下载并校验 Python/Node，安装锁定依赖并构建成功；后续继续验证 EXE 准备、项目本地环境启动及更新防覆盖。
+
+
+## F039：隔离 PATH 启动暴露 PowerShell 模块继承与 Electron 手动安装缺口
+
+- 日期：2026-11-09。首轮 EXE 隔离测试报 Get-FileHash 无法识别；独立环境的 Electron 桌面测试也因缺少 dist/electron.exe 无法启动。
+- 已确认原因：启动器从 PowerShell Core 环境继承了不适用于系统 Windows PowerShell 的 PSModulePath；另一个独立原因是锁定的 Electron 45 npm 包不含自动 postinstall，npm ci 成功并不代表桌面二进制已下载。不是 API Key、用户数据或模型错误。
+- 修复：仅对子进程移除继承的 PSModulePath，让系统 PowerShell 使用自有模块；bootstrap 显式执行 Electron 的 install.js，确认 exe 存在后才记录依赖成功。npm start 同步增加 prepare:electron，修复源码首次启动的相同缺口。
+- 复验：修复后的真实 EXE --prepare-only 在无系统 Python/Node PATH、含中文与空格的独立目录通过；本地 Python、Node、Electron 下载与校验、依赖安装、前端构建完成。项目本地环境的桌面启动、建主题、图标与更新错误反馈通过；无系统 Python/Node PATH 的 EXE 再启动缓存复用通过（本机 2.2 秒），Windows 更新工作进程交接后可独占打开被跟踪 EXE。10 项桌面单元测试及 workspace/recovery smoke 通过，后端 377 通过、15 条真实模型/Docker 条件跳过；未读写正式 .local/、未调用收费模型。尚未在独立干净 Windows 机器或实际远程新版本完整更新链路验收。

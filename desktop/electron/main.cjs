@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } = require('electron');
-const { spawn } = require('node:child_process');
+const { spawn, execFile } = require('node:child_process');
 const { randomBytes } = require('node:crypto');
 const path = require('node:path');
 const { shouldHideOnClose, isApiRequest } = require('./lifecycle.cjs');
@@ -65,6 +65,35 @@ else {
       ipcMain.handle('appearance', (event, value) => {
         if (event.sender !== window.webContents) throw new Error('请求不被允许');
         return value === undefined ? readAppearance(appearanceDirectory) : writeAppearance(appearanceDirectory, value);
+      });
+      let updateBusy = false;
+      ipcMain.handle('source-update', async (event, action) => {
+        if (event.sender !== window.webContents || !['check', 'apply'].includes(action)) throw new Error('请求不被允许');
+        if (app.isPackaged) throw new Error('此更新器用于完整克隆的源码工作区。');
+        if (updateBusy) throw new Error('已有更新检查正在进行。');
+        updateBusy = true;
+        try {
+          const fs = require('node:fs');
+          const specs = JSON.parse(fs.readFileSync(path.join(root, 'scripts/launcher-runtimes.json'), 'utf8'));
+          const localNode = path.join(root, '.runtime', specs.node.directory, specs.node.executable);
+          const node = fs.existsSync(localNode) ? localNode : 'node.exe';
+          const status = await new Promise((resolve, reject) => execFile(node, [path.join(root, 'scripts/update-repository.cjs'), '--check'], {
+            cwd: root, windowsHide: true, timeout: 60000,
+            env: { ...process.env, AGENT_UPDATE_ROOT: root, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never' }
+          }, (error, stdout, stderr) => {
+            if (error) return reject(new Error(stderr.trim() || '更新检查失败。'));
+            try { resolve(JSON.parse(stdout)); } catch { reject(new Error('更新检查返回了无效结果。')); }
+          }));
+          if (action === 'apply' && status.available) {
+            const launcher = path.join(root, 'Archive Zero.exe');
+            if (!fs.existsSync(launcher)) throw new Error('缺少启动器，请先构建或恢复 Archive Zero.exe。');
+            const updater = spawn(launcher, ['--update', '--wait-for-pid', String(process.pid)], { cwd: root, detached: true, stdio: 'ignore', windowsHide: true });
+            await new Promise((resolve, reject) => { updater.once('spawn', resolve); updater.once('error', reject); });
+            updater.unref();
+            setImmediate(() => app.quit());
+          }
+          return status;
+        } finally { updateBusy = false; }
       });
       ipcMain.handle('api', async (event, { path: requestPath, method, body }) => {
         if (event.sender !== window.webContents || !isApiRequest(requestPath, method)) throw new Error('请求不被允许');

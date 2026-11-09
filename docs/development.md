@@ -14,6 +14,16 @@
 
 测试务必使用 tmp_path 或独立 AGENT_DATA_DIR，禁止针对正式 `.local/` 做清空、迁移或故障注入。项目使用 Git 管理；对外发布前检查待提交清单，不提交个人资料、密钥、依赖或构建产物。
 
+## 仓库启动器与更新器
+
+根目录的 `Archive Zero.exe` 是小型 WinForms 启动器，源代码为 `scripts/launcher/Launcher.cs`。在 Windows 使用 `powershell -File scripts/build-launcher.ps1` 重建，需提交源代码、图标及生成的 EXE；完整运行环境不提交。启动器使用进程内 PowerShell 执行策略运行项目脚本，不修改机器执行策略。
+
+`scripts/bootstrap-desktop.ps1` 从固定 HTTPS 地址下载运行环境并核对 `scripts/launcher-runtimes.json` 的 SHA-256。Python 使用官方 [NuGet 运行环境](https://docs.python.org/3.13/using/windows.html#the-nuget-org-packages)，Node 使用 [官方版本文件](https://nodejs.org/dist/v24.22.2/SHASUMS256.txt)。运行环境、虚拟环境、下载缓存、指纹与日志都在 `.runtime/`；锁文件防止重复准备。完成相应阶段后才写入成功指纹，失败后可重试。
+
+更新入口由 `SourceUpdate.tsx`、受限 IPC 和 `electron/source-update.cjs` 实现。检查在独立 Node 进程中执行，不阻塞 Electron 主进程；只接受本项目 origin 与 main 分支，拒绝脏工作区与非快进更新。退出旧进程后复查，并从 `.runtime/` 的启动器副本执行更新，避免 Windows 锁住被跟踪的 EXE。不会执行 reset、clean、stash 或强制 checkout，不使用自动交互登录。
+
+验收在独立完整源码副本中运行 `Archive Zero.exe --prepare-only`，再运行 `powershell -File scripts/test-launcher.ps1 -PreparedRoot <副本绝对路径>`，验证缓存复用与 Windows EXE 解锁交接；然后运行 `node desktop/tests/launcher-smoke.cjs <副本绝对路径>`；移除系统 Python/Node PATH，验证项目本地环境和界面。`npm test` 中的 source-update 用真实临时 Git 仓库验证快进、脏工作区、错误分支、错误远程及分叉保护。不能用替身或本机验收替代独立干净 Windows 机器验收。
+
 ## 验证命令
 
 项目根目录，默认不调用收费模型：
@@ -53,6 +63,7 @@ Pop-Location
 | 路径 | 处理方式 |
 | --- | --- |
 | .local/ 或自定义数据目录 | 正式数据/凭据/会话/记忆，禁止作为缓存清理 |
+| .runtime/ | 启动器下载的运行环境、依赖指纹与日志；不提交，不等同用户资料 |
 | .venv/、desktop/node_modules/ | 已安装依赖，保留便于直接工作；分享仓库时不包含 |
 | src/*.egg-info/ | 构建生成元数据，可清理；当前安装使用 .venv 中 dist-info，重新构建可再生 |
 | artifacts/、evals/reports/ | 生成报告和隔离测试目录；先留必要失败证据再清理，不能提交私密资料 |

@@ -1,0 +1,16 @@
+{
+  "python": {
+    "version": "3.13.17",
+    "url": "https://api.nuget.org/v3-flatcontainer/python/3.13.17/python.3.13.17.nupkg",
+    "sha256": "dce409744b088f94c6e37ba41f8100c384c27e029e843237364c602d30d475e5",
+    "directory": "python-3.13.17",
+    "executable": "tools/python.exe"
+  },
+  "node": {
+    "version": "24.22.2",
+    "url": "https://nodejs.org/dist/v24.22.2/node-v24.22.2-win-x64.zip",
+    "sha256": "ca1bff5d8ead13c9f2ea404a176db46bd430704d5b5113734049fa365e7799e2",
+    "directory": "node-v24.22.2-win-x64",
+    "executable": "node.exe"
+  }
+}

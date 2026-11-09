@@ -31,3 +31,6 @@ build/
 /private-notes/
 /docs/interview.md
 /docs/resume.md
+
+# Project-local launcher runtimes, download cache and startup logs.
+.runtime/

@@ -56,6 +56,8 @@ flowchart TD
 
 外观偏好通过受限 preload/IPC 交给 `electron/appearance.cjs`，校验布尔白名单并原子写入数据目录的 `appearance.json`，不依赖后端随机端口。它仅保存角色/动效偏好，不是 Agent 记忆。专注模式只在本次窗口内收起材料侧栏；系统减少动态效果设置优先。Vite 负责打包页面素材。
 
+源码启动可经根目录 EXE 调用 bootstrap，以仓库内 `.runtime/` 的 Python/Node 运行应用。应用更新通过受限 IPC 在独立进程检查 GitHub main，用户确认后退出应用，由启动器副本执行经过保护的快进更新，再重新检查依赖与前端构建指纹。业务数据目录不参与更新，源码更新失败不回退或覆盖本地用户修改。
+
 ## 一轮任务
 
 1. 业务构造 Task 与 Corpus，经 Harness 统一入口。讨论从当前分支取得历史，绑定原用户问题和合法记忆。
