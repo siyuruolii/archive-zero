@@ -34,9 +34,9 @@ export function useAppearance() {
 }
 
 export function AppearanceSettings({ appearance, update, disabled, error }: ReturnType<typeof useAppearance>) {
-  return <section className="appearance-settings" aria-label="阅读外观"><h3>晴空阅览室</h3><p className="muted">清透的蓝色、安静的留白，和一位陪你整理线索的档案管理员。</p>
-    <label className="setting-row appearance-toggle"><span><strong>角色陪伴</strong><span className="setting-description">首页展示完整立绘，材料侧栏保留半身像。</span></span><input type="checkbox" aria-label="角色陪伴" checked={appearance.character} disabled={disabled} onChange={e => { void update({ ...appearance, character: e.target.checked }); }}/></label>
-    <label className="setting-row appearance-toggle"><span><strong>页面动效</strong><span className="setting-description">轻量的页面切换过渡；同时遵循系统的减少动态效果设置。</span></span><input type="checkbox" aria-label="页面动效" checked={appearance.motion} disabled={disabled} onChange={e => { void update({ ...appearance, motion: e.target.checked }); }}/></label>
+  return <section className="appearance-settings" aria-label="阅读外观"><h3>外观</h3>
+    <label className="setting-row appearance-toggle"><span><strong>角色陪伴</strong><span className="setting-description">在首页和阅读侧栏显示管理员</span></span><input type="checkbox" aria-label="角色陪伴" checked={appearance.character} disabled={disabled} onChange={e => { void update({ ...appearance, character: e.target.checked }); }}/></label>
+    <label className="setting-row appearance-toggle"><span><strong>页面动效</strong><span className="setting-description">遵循系统的减少动态效果设置</span></span><input type="checkbox" aria-label="页面动效" checked={appearance.motion} disabled={disabled} onChange={e => { void update({ ...appearance, motion: e.target.checked }); }}/></label>
     {error && <p role="alert" className="error-text">{error}</p>}
   </section>;
 }

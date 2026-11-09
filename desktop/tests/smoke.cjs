@@ -1,4 +1,4 @@
-const { _electron: electron } = require('@playwright/test');
+const { _electron: electron, expect } = require('@playwright/test');
 const path = require('node:path');
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
@@ -8,7 +8,7 @@ const { execFileSync } = require('node:child_process');
   const directory = fs.mkdtempSync(path.join(root, 'artifacts', 'desktop-smoke-'));
   execFileSync(path.join(root, '.venv', 'Scripts', 'python.exe'), ['-X', 'utf8', path.join(root, 'tests', 'desktop_fixture.py'), directory], { cwd: root });
   const app = await electron.launch({ args: [path.join(root, 'desktop')],
-    env: { ...process.env, AGENT_API_KEY: '', AGENT_DATA_DIR: directory, AGENT_TEST_MODE: '1' }, timeout: 40000 });
+    env: { ...process.env, AGENT_API_KEY: '', AGENT_DATA_DIR: directory, AGENT_PROFILE_DIR: path.join(directory, 'profile'), AGENT_TEST_MODE: '1' }, timeout: 40000 });
   try {
     const page = await app.firstWindow();
     await page.waitForLoadState('networkidle');
@@ -16,7 +16,7 @@ const { execFileSync } = require('node:child_process');
     assert.equal(await page.locator('.rail-brand strong').textContent(), 'Archive Zero');
     const identity = await app.evaluate(({ app }) => ({ name: app.getName(), profile: app.getPath('userData') }));
     assert.equal(identity.name, 'Archive Zero');
-    assert.equal(path.basename(identity.profile), 'reading-agent-desktop');
+    assert.equal(identity.profile, path.join(directory, 'profile'));
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.getByRole('button', { name: '设置', exact: true }).click();
     await page.getByRole('button', { name: '模型设置', exact: true }).click();
@@ -91,6 +91,15 @@ const { execFileSync } = require('node:child_process');
       return { exists: !window.isDestroyed(), visible: window.isVisible() };
     });
     assert.deepEqual(lifecycle, { exists: true, visible: false });
+    await app.evaluate(({BrowserWindow}, file) => {
+      const window = BrowserWindow.getAllWindows()[0];
+      process.mainModule.require(file).restoreWindow(window);
+    }, path.join(root, 'desktop/electron/lifecycle.cjs'));
+    assert.equal(await app.evaluate(({BrowserWindow}) => BrowserWindow.getAllWindows()[0].isVisible()), true);
+    await app.evaluate(({BrowserWindow}) => BrowserWindow.getAllWindows()[0].minimize());
+    await expect.poll(() => app.evaluate(({BrowserWindow}) => BrowserWindow.getAllWindows()[0].isMinimized())).toBe(true);
+    await app.evaluate(({BrowserWindow}, file) => process.mainModule.require(file).restoreWindow(BrowserWindow.getAllWindows()[0]), path.join(root, 'desktop/electron/lifecycle.cjs'));
+    await expect.poll(() => app.evaluate(({BrowserWindow}) => BrowserWindow.getAllWindows()[0].isMinimized())).toBe(false);
     assert.deepEqual(errors, []);
     console.log('Desktop model settings, CRUD, memory, close-to-tray and screenshot: passed.');
   } finally { await app.close(); }

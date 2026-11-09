@@ -32,6 +32,8 @@
 
 ## 验证命令
 
+设置页面可运行 `node desktop/tests/settings-smoke.cjs`：覆盖各栏目、资料库空状态、主页更新器入口、检查失败/可更新/最新/取消确认等状态及窄窗口。更新 UI 使用本机 IPC 替身，不代表真实远程更新验收；Git 防覆盖由 source-update.test 验证。原生测试须同时为数据和 `AGENT_PROFILE_DIR` 指定独立临时目录，避免单实例身份与 GPU 缓存互相干扰。托盘事件单元测试覆盖单击/双击绑定，smoke.cjs 使用真实窗口验证隐藏和最小化后的恢复。
+
 项目根目录，默认不调用收费模型：
 
 ```powershell

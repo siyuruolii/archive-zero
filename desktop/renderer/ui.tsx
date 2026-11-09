@@ -10,6 +10,7 @@ export function trapFocus(event: React.KeyboardEvent<HTMLElement>) {
 
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
+    download: <><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></>,
     book: <><path d="M3 5.5c4-2 6-1 9 0 3-1 5-2 9 0v14c-4-2-6-1-9 0-3-1-5-2-9 0z"/><path d="M12 5.5v14"/></>,
     folder: <path d="M3 7V5a1 1 0 0 1 1-1h5l2 3h9a1 1 0 0 1 1 1v11H3z"/>,
     chat: <path d="M4 4h16v12H9l-5 4z"/>,

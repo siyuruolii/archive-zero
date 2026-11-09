@@ -8,7 +8,7 @@ const { execFileSync } = require('node:child_process');
   const root = path.resolve(__dirname, '../..');
   const directory = fs.mkdtempSync(path.join(root, 'artifacts/appearance-desktop-'));
   execFileSync(path.join(root, '.venv/Scripts/python.exe'), ['-X', 'utf8', path.join(root, 'tests/desktop_fixture.py'), directory], { cwd: root });
-  const launch = () => electron.launch({ args: [path.join(root, 'desktop')], env: { ...process.env, AGENT_DATA_DIR: directory, AGENT_API_KEY: '', AGENT_TEST_MODE: '1' }, timeout: 40000 });
+  const launch = () => electron.launch({ args: [path.join(root, 'desktop')], env: { ...process.env, AGENT_DATA_DIR: directory, AGENT_PROFILE_DIR: path.join(directory, 'profile'), AGENT_API_KEY: '', AGENT_TEST_MODE: '1' }, timeout: 40000 });
   let app = await launch();
   const errors = [];
   try {

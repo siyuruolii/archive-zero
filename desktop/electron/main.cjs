@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } = require
 const { spawn, execFile } = require('node:child_process');
 const { randomBytes } = require('node:crypto');
 const path = require('node:path');
-const { shouldHideOnClose, isApiRequest } = require('./lifecycle.cjs');
+const { shouldHideOnClose, isApiRequest, restoreWindow, bindTrayRestore } = require('./lifecycle.cjs');
 const { backendRuntime } = require('./runtime.cjs');
 const { readAppearance, writeAppearance } = require('./appearance.cjs');
 let backend, window, tray, origin, quitting = false;
@@ -13,9 +13,15 @@ const profile = process.env.AGENT_PROFILE_DIR || (process.env.AGENT_RUN_MODE ===
 require('node:fs').mkdirSync(profile, { recursive: true });
 app.setPath('userData', profile);
 app.setName('Archive Zero');
+// Keep editing and developer shortcuts without a permanent menu strip.
+Menu.setApplicationMenu(Menu.buildFromTemplate([
+  { label: '编辑', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
+  { label: '视图', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'togglefullscreen' }] },
+  { label: '窗口', submenu: [{ role: 'minimize' }, { role: 'close' }, { role: 'quit', label: '退出应用' }] }
+]));
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', () => { if (window) { window.show(); window.focus(); } });
+  app.on('second-instance', () => restoreWindow(window));
   app.whenReady().then(async () => {
     try {
       const root = path.resolve(__dirname, '..', '..');
@@ -47,7 +53,7 @@ else {
       }
       if (!ready) throw new Error('后端尚未就绪，请检查本地模型配置。');
       window = new BrowserWindow({ width: 1380, height: 920, minWidth: 980, minHeight: 680,
-        show: process.env.AGENT_TEST_MODE !== '1',
+        show: process.env.AGENT_TEST_MODE !== '1', autoHideMenuBar: true,
         icon: path.join(__dirname, '../assets/brand/archive-zero-icon.png'),
         backgroundColor: '#f0f7fb', title: 'Archive Zero · 零号档案',
         webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true }
@@ -59,10 +65,10 @@ else {
       tray = new Tray(icon);
       tray.setToolTip('Archive Zero · 零号档案');
       tray.setContextMenu(Menu.buildFromTemplate([
-        { label: '打开 Archive Zero', click: () => window.show() },
+        { label: '打开 Archive Zero', click: () => restoreWindow(window) },
         { type: 'separator' }, { label: '退出应用', click: () => app.quit() }
       ]));
-      tray.on('double-click', () => window.show());
+      bindTrayRestore(tray, () => window);
       const appearanceDirectory = runtime.env.AGENT_DATA_DIR || path.join(root, '.local');
       ipcMain.handle('appearance', (event, value) => {
         if (event.sender !== window.webContents) throw new Error('请求不被允许');

@@ -27,18 +27,15 @@ export function ModelSettings({ request, onSaved }: Props) {
   }
   async function save(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setError(''); setNotice('');
-    try { const saved = await request('/api/settings/models', 'PUT', config); setConfig(saved); setUsage({}); setNotice('已保存，新任务使用新设置；正在运行的模型循环继续使用原配置。'); await onSaved(); }
+    try { const saved = await request('/api/settings/models', 'PUT', config); setConfig(saved); setUsage({}); setNotice('已保存，新任务使用新设置。'); await onSaved(); }
     catch { setError('保存未确认：请检查模型名称、接口地址、密钥、阶段选择和长度限制，并重新打开设置核对结果。'); }
     finally { setBusy(false); }
   }
   return <section className="page model-settings"><form onSubmit={save}>
-    <p className="muted">支持兼容 Chat Completions 的接口。先添加模型，再为阶段选择模型；未单独指定的阶段使用默认模型。</p>
     {config.environment_override && <p className="muted">当前存在 AGENT_* 环境配置；重启时它会覆盖默认模型。要以页面设置为准，请先移除环境覆盖，单独指定的阶段分配仍保留。</p>}
-    <button type="button" onClick={() => request('/api/settings/model-usage').then(r => setUsage(r.profiles)).catch(() => setError('无法读取调用统计。'))}>刷新调用统计</button>
     {error && <p role="alert" className="error-text">{error}</p>}{notice && <p role="status">{notice}</p>}
-    <fieldset disabled={busy}><legend>模型配置</legend><div className="toolbar"><label>编辑配置<select aria-label="编辑模型配置" value={selected} onChange={e => setSelected(e.target.value)}>{names.map(n => <option key={n} value={n}>{n} · {config.profiles[n].model || '新模型'}</option>)}</select></label><button type="button" onClick={add}>添加模型</button>{profile && <button type="button" onClick={remove}>移除此配置</button>}</div>
+    <fieldset disabled={busy}><legend>模型连接</legend><div className="model-profilebar"><label>当前配置<select aria-label="编辑模型配置" disabled={!names.length} value={selected} onChange={e => setSelected(e.target.value)}>{!names.length && <option value="">尚未添加模型</option>}{names.map(n => <option key={n} value={n}>{n} · {config.profiles[n].model || '新模型'}</option>)}</select></label><div className="model-profile-actions"><button type="button" onClick={add}>添加模型</button>{profile && <button className="subtle-danger" type="button" onClick={remove}>移除此配置</button>}</div></div>
       {profile && <><label>模型名称<input aria-label="模型名称" required value={profile.model} onChange={e => update('model', e.target.value)}/></label>
-        {usage[selected] && <p className="muted">本次启动以来：完成 {usage[selected].completed} 次；缓存命中 token：{usage[selected].cache_hit_tokens ?? '接口未报告'}，未命中：{usage[selected].cache_miss_tokens ?? '接口未报告'}。更换设置后重新统计。</p>}
         <label>接口地址<input aria-label="模型接口地址" type="url" required placeholder="https://example.com/v1" value={profile.base_url} onChange={e => update('base_url', e.target.value)}/></label>
         <label>API 密钥<input aria-label="模型API密钥" type="password" autoComplete="new-password" required={!profile.has_api_key} value={profile.api_key || ''} placeholder={profile.has_api_key ? '已保存；留空保留原密钥' : '输入密钥'} onChange={e => update('api_key', e.target.value)}/></label>
         <details><summary>接口能力与预算</summary>
@@ -54,8 +51,9 @@ export function ModelSettings({ request, onSaved }: Props) {
           <label>推理强度<select value={profile.reasoning_effort || ''} onChange={e => update('reasoning_effort', e.target.value || null)}><option value="">不传，使用接口默认</option>{['none', 'low', 'medium', 'high', 'max'].map(v => <option key={v}>{v}</option>)}</select></label>
         </details></>}
     </fieldset>
+    <details className="model-usage"><summary>调用统计{usage[selected] && <span>本次启动 {usage[selected].completed} 次</span>}</summary><div className="usage-content">{usage[selected] && <dl><div><dt>完成请求</dt><dd>{usage[selected].completed}</dd></div><div><dt>缓存命中 token</dt><dd>{usage[selected].cache_hit_tokens ?? '未报告'}</dd></div><div><dt>未命中 token</dt><dd>{usage[selected].cache_miss_tokens ?? '未报告'}</dd></div></dl>}<button type="button" onClick={() => request('/api/settings/model-usage').then(r => setUsage(r.profiles)).catch(() => setError('无法读取调用统计。'))}>刷新调用统计</button><p className="muted">仅统计本次启动；更换设置后重新统计。</p></div></details>
     <fieldset disabled={busy || !names.length}><legend>阶段分配</legend><label>默认模型<select aria-label="默认模型" value={config.default} onChange={e => setConfig({ ...config, default: e.target.value })}>{names.map(n => <option key={n} value={n}>{n}</option>)}</select></label>
       {(config.available_stages || Object.keys(labels)).map((stage: string) => <label key={stage}>{labels[stage] || stage}<select aria-label={labels[stage] || stage} value={config.stages[stage] || ''} onChange={e => { const stages = { ...config.stages }; if (e.target.value) stages[stage] = e.target.value; else delete stages[stage]; setConfig({ ...config, stages }); }}>{<option value="">继承默认模型</option>}{names.map(n => <option key={n} value={n}>{n}</option>)}</select></label>)}
-    </fieldset><button className="primary" type="submit" disabled={busy || !names.length}>{busy ? '正在保存…' : '保存模型设置'}</button>
+    </fieldset><details className="settings-help"><summary>配置帮助</summary><p>支持 Chat Completions 兼容接口。未单独分配的阶段继承默认模型。密钥留空会保留已保存的密钥。</p></details><div className="settings-save"><button className="primary" type="submit" disabled={busy || !names.length}>{busy ? '正在保存…' : '保存模型设置'}</button></div>
   </form></section>;
 }
